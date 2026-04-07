@@ -5,6 +5,10 @@
         <a href="add-document.php" style="color:#e5e7eb;padding:10px 12px;border-radius:8px;background:rgba(255,255,255,0.04);">Add New Document</a>
         <a href="digital-showcase.php" style="color:#e5e7eb;padding:10px 12px;border-radius:8px;background:rgba(255,255,255,0.04);">Digital Showcase Images</a>
         <a href="agro-shop.php" style="color:#e5e7eb;padding:10px 12px;border-radius:8px;background:rgba(255,255,255,0.04);">Agro Shop Items</a>
+        <a href="agro-orders.php" style="color:#e5e7eb;padding:10px 12px;border-radius:8px;background:rgba(255,255,255,0.04);">Agro Orders</a>
+        <a href="printing-orders.php" style="color:#e5e7eb;padding:10px 12px;border-radius:8px;background:rgba(255,255,255,0.04);">Printing Orders</a>
+        <a href="contact-details.php" style="color:#e5e7eb;padding:10px 12px;border-radius:8px;background:rgba(255,255,255,0.04);">Contact Details</a>
+        <a href="admin-accounts.php" style="color:#e5e7eb;padding:10px 12px;border-radius:8px;background:rgba(255,255,255,0.04);">Admin accounts</a>
         <a href="logout.php" style="color:#fecaca;padding:10px 12px;border-radius:8px;background:rgba(255,255,255,0.04);">Logout</a>
     </nav>
 </aside>

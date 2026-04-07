@@ -6,19 +6,39 @@ if (isAdminAuthenticated()) {
     exit;
 }
 
+require_once dirname(__DIR__) . '/includes/database.php';
+
 $error = '';
+$pdoLogin = nexora_db_connect();
+
+if ($pdoLogin) {
+    nexora_admin_users_ensure_table($pdoLogin);
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = isset($_POST['username']) ? trim($_POST['username']) : '';
-    $password = isset($_POST['password']) ? trim($_POST['password']) : '';
+    $password = isset($_POST['password']) ? (string) ($_POST['password'] ?? '') : '';
 
-    if ($username === 'admin' && $password === 'admin123') {
-        $_SESSION['is_admin'] = true;
-        $_SESSION['admin_user'] = 'admin';
-        header('Location: dashboard.php');
-        exit;
+    if (!$pdoLogin) {
+        $error = 'Cannot sign in: database is not available. Check PostgreSQL and PHP pdo_pgsql.';
+    } elseif ($username === '' || $password === '') {
+        $error = 'Please enter username and password.';
     } else {
-        $error = 'Invalid username or password.';
+        try {
+            $st = $pdoLogin->prepare('SELECT id, username, password_hash FROM admin_users WHERE LOWER(username) = LOWER(?)');
+            $st->execute([$username]);
+            $row = $st->fetch(PDO::FETCH_ASSOC);
+            if ($row && password_verify($password, (string) $row['password_hash'])) {
+                $_SESSION['is_admin'] = true;
+                $_SESSION['admin_user_id'] = (int) $row['id'];
+                $_SESSION['admin_username'] = (string) $row['username'];
+                header('Location: dashboard.php');
+                exit;
+            }
+            $error = 'Invalid username or password.';
+        } catch (Throwable $e) {
+            $error = 'Sign-in failed. Please try again.';
+        }
     }
 }
 ?>

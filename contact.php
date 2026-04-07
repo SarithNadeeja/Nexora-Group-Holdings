@@ -1,5 +1,7 @@
 <?php
 require_once __DIR__ . '/includes/config.php';
+require_once __DIR__ . '/includes/division_contacts.php';
+$divisionContacts = nexora_division_contacts_all();
 $pageTitle = 'Contact Us';
 
 $errors = [];
@@ -78,15 +80,69 @@ include __DIR__ . '/includes/navbar.php';
                         <span class="contact-detail-icon" aria-hidden="true">📍</span>
                         <div><strong>Address:</strong> Colombo, Sri Lanka</div>
                     </li>
-                    <li>
-                        <span class="contact-detail-icon" aria-hidden="true">📞</span>
-                        <div><strong>Phone:</strong> <a href="tel:+94771234567">+94 77 123 4567</a></div>
-                    </li>
-                    <li>
-                        <span class="contact-detail-icon" aria-hidden="true">✉️</span>
-                        <div><strong>Email:</strong> <a href="mailto:info@nexora.lk">info@nexora.lk</a></div>
-                    </li>
                 </ul>
+
+                <h3 class="contact-divisions-title">Reach the right team</h3>
+                <p class="contact-divisions-intro">Use the contacts below for each division &mdash; we&rsquo;ll respond as soon as we can.</p>
+                <div class="contact-divisions-grid">
+                    <div class="contact-division-card">
+                        <h4 class="contact-division-label">Nexora Digital</h4>
+                        <p class="contact-division-line">
+                            <span class="contact-division-icon" aria-hidden="true">📞</span>
+                            <?php if (trim($divisionContacts['digital']['phone']) !== ''): ?>
+                                <a href="<?php echo htmlspecialchars(nexora_phone_tel_href($divisionContacts['digital']['phone'])); ?>"><?php echo htmlspecialchars($divisionContacts['digital']['phone']); ?></a>
+                            <?php else: ?>
+                                <span class="contact-division-empty">&mdash;</span>
+                            <?php endif; ?>
+                        </p>
+                        <p class="contact-division-line">
+                            <span class="contact-division-icon" aria-hidden="true">✉️</span>
+                            <?php if (trim($divisionContacts['digital']['email']) !== ''): ?>
+                                <a href="mailto:<?php echo htmlspecialchars($divisionContacts['digital']['email'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($divisionContacts['digital']['email']); ?></a>
+                            <?php else: ?>
+                                <span class="contact-division-empty">&mdash;</span>
+                            <?php endif; ?>
+                        </p>
+                    </div>
+                    <div class="contact-division-card">
+                        <h4 class="contact-division-label">Nexora Agro</h4>
+                        <p class="contact-division-line">
+                            <span class="contact-division-icon" aria-hidden="true">📞</span>
+                            <?php if (trim($divisionContacts['agro']['phone']) !== ''): ?>
+                                <a href="<?php echo htmlspecialchars(nexora_phone_tel_href($divisionContacts['agro']['phone'])); ?>"><?php echo htmlspecialchars($divisionContacts['agro']['phone']); ?></a>
+                            <?php else: ?>
+                                <span class="contact-division-empty">&mdash;</span>
+                            <?php endif; ?>
+                        </p>
+                        <p class="contact-division-line">
+                            <span class="contact-division-icon" aria-hidden="true">✉️</span>
+                            <?php if (trim($divisionContacts['agro']['email']) !== ''): ?>
+                                <a href="mailto:<?php echo htmlspecialchars($divisionContacts['agro']['email'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($divisionContacts['agro']['email']); ?></a>
+                            <?php else: ?>
+                                <span class="contact-division-empty">&mdash;</span>
+                            <?php endif; ?>
+                        </p>
+                    </div>
+                    <div class="contact-division-card">
+                        <h4 class="contact-division-label">Nexora Printing</h4>
+                        <p class="contact-division-line">
+                            <span class="contact-division-icon" aria-hidden="true">📞</span>
+                            <?php if (trim($divisionContacts['printing']['phone']) !== ''): ?>
+                                <a href="<?php echo htmlspecialchars(nexora_phone_tel_href($divisionContacts['printing']['phone'])); ?>"><?php echo htmlspecialchars($divisionContacts['printing']['phone']); ?></a>
+                            <?php else: ?>
+                                <span class="contact-division-empty">&mdash;</span>
+                            <?php endif; ?>
+                        </p>
+                        <p class="contact-division-line">
+                            <span class="contact-division-icon" aria-hidden="true">✉️</span>
+                            <?php if (trim($divisionContacts['printing']['email']) !== ''): ?>
+                                <a href="mailto:<?php echo htmlspecialchars($divisionContacts['printing']['email'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($divisionContacts['printing']['email']); ?></a>
+                            <?php else: ?>
+                                <span class="contact-division-empty">&mdash;</span>
+                            <?php endif; ?>
+                        </p>
+                    </div>
+                </div>
             </div>
 
             <div class="contact-main-form-wrap reveal-on-scroll reveal-right">

@@ -39,18 +39,71 @@ function agro_shop_validate_image(array $file, array $allowedExt, bool $required
     return $ext;
 }
 
-function agro_shop_remove_item_folder(string $root, int $id): void
+function agro_shop_unlink_stored_path(string $root, ?string $relative): void
 {
-    $dir = $root . '/assets/uploads/agro/items/' . $id;
+    if ($relative === null || $relative === '') {
+        return;
+    }
+    $abs = $root . DIRECTORY_SEPARATOR . str_replace(['/', '\\'], DIRECTORY_SEPARATOR, ltrim($relative, '/\\'));
+    $real = realpath($abs);
+    $agroUploadRoot = realpath($root . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'agro');
+    if ($real === false || $agroUploadRoot === false || !is_file($real)) {
+        return;
+    }
+    if (strpos($real, $agroUploadRoot) !== 0) {
+        return;
+    }
+    @unlink($real);
+}
+
+/**
+ * Recursively remove assets/uploads/agro/items/{id} (all files and the folder).
+ */
+function agro_shop_remove_item_directory(string $root, int $id): void
+{
+    $dir = $root . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'agro' . DIRECTORY_SEPARATOR . 'items' . DIRECTORY_SEPARATOR . $id;
     if (!is_dir($dir)) {
         return;
     }
-    foreach (glob($dir . DIRECTORY_SEPARATOR . '*') ?: [] as $f) {
-        if (is_file($f)) {
-            @unlink($f);
+
+    try {
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::CHILD_FIRST
+        );
+        foreach ($iterator as $item) {
+            $path = $item->getRealPath();
+            if ($path === false) {
+                continue;
+            }
+            if ($item->isDir()) {
+                @rmdir($path);
+            } else {
+                @unlink($path);
+            }
+        }
+    } catch (Throwable $e) {
+        foreach (glob($dir . DIRECTORY_SEPARATOR . '*') ?: [] as $f) {
+            if (is_file($f)) {
+                @unlink($f);
+            }
         }
     }
     @rmdir($dir);
+}
+
+/**
+ * Remove all images for a shop item: delete each file from DB paths, then remove items/{id} entirely.
+ */
+function agro_shop_delete_item_assets(string $root, array $row, int $id): void
+{
+    $cols = ['image_main', 'image_gallery_1', 'image_gallery_2', 'image_gallery_3', 'image_gallery_4'];
+    foreach ($cols as $col) {
+        if (!empty($row[$col])) {
+            agro_shop_unlink_stored_path($root, (string) $row[$col]);
+        }
+    }
+    agro_shop_remove_item_directory($root, $id);
 }
 
 function agro_shop_save_image(string $tmp, string $destPath): bool
@@ -76,8 +129,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $st->execute([$delId]);
         $row = $st->fetch(PDO::FETCH_ASSOC);
         if ($row) {
+            agro_shop_delete_item_assets($root, $row, $delId);
             $pdo->prepare('DELETE FROM agro_shop_items WHERE id = ?')->execute([$delId]);
-            agro_shop_remove_item_folder($root, $delId);
             $success = 'Product removed.';
             if ($editId === $delId) {
                 header('Location: agro-shop.php');
@@ -90,9 +143,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $name = isset($_POST['name']) ? trim((string) $_POST['name']) : '';
         $price = isset($_POST['price']) ? (float) $_POST['price'] : 0;
         $stock = isset($_POST['stock_status']) ? (string) $_POST['stock_status'] : '';
+        $description = isset($_POST['description']) ? trim((string) $_POST['description']) : '';
 
         if ($name === '' || mb_strlen($name) > 255) {
             $error = 'Please enter a valid name (max 255 characters).';
+        } elseif (mb_strlen($description) > 10000) {
+            $error = 'Description is too long (max 10,000 characters).';
         } elseif ($price < 0 || $price > 99999999.99) {
             $error = 'Please enter a valid price.';
         } elseif (!in_array($stock, $validStock, true)) {
@@ -130,9 +186,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $pdo->beginTransaction();
                     try {
                         $ins = $pdo->prepare(
-                            'INSERT INTO agro_shop_items (name, price, stock_status) VALUES (?, ?, ?) RETURNING id'
+                            'INSERT INTO agro_shop_items (name, price, stock_status, description) VALUES (?, ?, ?, ?) RETURNING id'
                         );
-                        $ins->execute([$name, $price, $stock]);
+                        $ins->execute([$name, $price, $stock, $description === '' ? null : $description]);
                         $idRow = $ins->fetch(PDO::FETCH_ASSOC);
                         if (!$idRow || empty($idRow['id'])) {
                             throw new RuntimeException('Failed to create product record.');
@@ -177,7 +233,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     } catch (Throwable $e) {
                         $pdo->rollBack();
                         if (isset($newId)) {
-                            agro_shop_remove_item_folder($root, $newId);
+                            agro_shop_remove_item_directory($root, $newId);
                         }
                         $error = $e instanceof RuntimeException ? $e->getMessage() : 'Could not save product.';
                     }
@@ -189,6 +245,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $name = isset($_POST['name']) ? trim((string) $_POST['name']) : '';
         $price = isset($_POST['price']) ? (float) $_POST['price'] : 0;
         $stock = isset($_POST['stock_status']) ? (string) $_POST['stock_status'] : '';
+        $description = isset($_POST['description']) ? trim((string) $_POST['description']) : '';
 
         $st = $pdo->prepare('SELECT * FROM agro_shop_items WHERE id = ?');
         $st->execute([$uid]);
@@ -198,6 +255,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'Product not found.';
         } elseif ($name === '' || mb_strlen($name) > 255) {
             $error = 'Please enter a valid name.';
+        } elseif (mb_strlen($description) > 10000) {
+            $error = 'Description is too long (max 10,000 characters).';
         } elseif ($price < 0) {
             $error = 'Please enter a valid price.';
         } elseif (!in_array($stock, $validStock, true)) {
@@ -273,8 +332,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($error === '') {
                 $pdo->prepare(
-                    'UPDATE agro_shop_items SET name = ?, price = ?, stock_status = ?, image_main = ?, image_gallery_1 = ?, image_gallery_2 = ?, image_gallery_3 = ?, image_gallery_4 = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
-                )->execute([$name, $price, $stock, $mainRel, $g[0], $g[1], $g[2], $g[3], $uid]);
+                    'UPDATE agro_shop_items SET name = ?, price = ?, stock_status = ?, description = ?, image_main = ?, image_gallery_1 = ?, image_gallery_2 = ?, image_gallery_3 = ?, image_gallery_4 = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
+                )->execute([$name, $price, $stock, $description === '' ? null : $description, $mainRel, $g[0], $g[1], $g[2], $g[3], $uid]);
                 header('Location: agro-shop.php?edit=' . $uid . '&saved=1');
                 exit;
             }
@@ -311,7 +370,7 @@ include __DIR__ . '/includes/header.php';
                     <label for="name">Name</label>
                     <input type="text" id="name" name="name" required maxlength="255" value="<?php echo htmlspecialchars($editRow['name']); ?>">
 
-                    <label for="price">Price</label>
+                    <label for="price">Price (LKR)</label>
                     <input type="number" id="price" name="price" min="0" step="0.01" required value="<?php echo htmlspecialchars((string) $editRow['price']); ?>">
 
                     <label for="stock_status">Stock</label>
@@ -320,6 +379,9 @@ include __DIR__ . '/includes/header.php';
                         <option value="pre_order" <?php echo $editRow['stock_status'] === 'pre_order' ? 'selected' : ''; ?>>Pre-order</option>
                         <option value="out_of_stock" <?php echo $editRow['stock_status'] === 'out_of_stock' ? 'selected' : ''; ?>>Out of stock</option>
                     </select>
+
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" maxlength="10000" placeholder="Product details for the public product page"><?php echo htmlspecialchars((string) ($editRow['description'] ?? '')); ?></textarea>
 
                     <label for="image_main">Main photo (leave empty to keep current)</label>
                     <?php if (!empty($editRow['image_main'])): ?>
@@ -350,7 +412,7 @@ include __DIR__ . '/includes/header.php';
                     <label for="name">Name</label>
                     <input type="text" id="name" name="name" required maxlength="255">
 
-                    <label for="price">Price</label>
+                    <label for="price">Price (LKR)</label>
                     <input type="number" id="price" name="price" min="0" step="0.01" required>
 
                     <label for="stock_status">Stock</label>
@@ -359,6 +421,9 @@ include __DIR__ . '/includes/header.php';
                         <option value="pre_order">Pre-order</option>
                         <option value="out_of_stock">Out of stock</option>
                     </select>
+
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" maxlength="10000" placeholder="Shown on the public product page"></textarea>
 
                     <label for="image_main">Main photo</label>
                     <input type="file" id="image_main" name="image_main" accept=".jpg,.jpeg,.png,.webp" required>

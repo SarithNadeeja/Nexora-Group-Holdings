@@ -13,3 +13,8 @@ nexora_print_documents_ensure_table($pdo);
 nexora_digital_featured_images_ensure_table($pdo);
 nexora_digital_client_comments_ensure_table($pdo);
 nexora_agro_shop_items_ensure_table($pdo);
+nexora_division_contacts_ensure_table($pdo);
+nexora_admin_users_ensure_table($pdo);
+nexora_agro_orders_ensure_table($pdo);
+nexora_printing_orders_ensure_table($pdo);
+nexora_printing_custom_orders_ensure_table($pdo);

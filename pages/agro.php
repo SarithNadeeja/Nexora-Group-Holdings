@@ -12,7 +12,7 @@ if ($pdoAgro) {
     try {
         nexora_agro_shop_items_ensure_table($pdoAgro);
         $agroShopItems = $pdoAgro->query(
-            'SELECT id, name, price, stock_status, image_main, image_gallery_1, image_gallery_2, image_gallery_3, image_gallery_4 FROM agro_shop_items ORDER BY id DESC'
+            'SELECT id, name, price, stock_status, description, image_main, image_gallery_1, image_gallery_2, image_gallery_3, image_gallery_4 FROM agro_shop_items ORDER BY id DESC'
         )->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
         $agroShopItems = [];
@@ -55,42 +55,6 @@ include dirname(__DIR__) . '/includes/navbar.php';
         </div>
     </section>
 
-    <!-- About -->
-    <section class="agro-about-section">
-        <div class="container agro-about-grid">
-            <div class="agro-about-content reveal-on-scroll reveal-left">
-                <h2>Trusted Agro Solutions</h2>
-                <p>Our agro division focuses on delivering fresh, reliable, and sustainable agricultural products sourced from trusted suppliers.</p>
-            </div>
-            <div class="agro-about-media reveal-on-scroll reveal-right">
-                <?php if (file_exists($agroImagePath)): ?>
-                    <img src="<?php echo BASE_URL; ?>/assets/images/agro.jpg" alt="Nexora Agro — agricultural products and plants">
-                <?php else: ?>
-                    <div class="agro-image-fallback">Add assets/images/agro.jpg</div>
-                <?php endif; ?>
-            </div>
-        </div>
-    </section>
-
-    <!-- Categories -->
-    <section class="agro-categories-section">
-        <div class="container">
-            <div class="section-heading agro-section-heading reveal-on-scroll">
-                <h2>Product Categories</h2>
-                <p>Everything you need to grow with confidence — from seed to harvest and display.</p>
-            </div>
-            <div class="agro-categories-grid">
-                <?php foreach ($agroCategories as $i => $cat): ?>
-                    <article class="agro-category-card reveal-on-scroll" style="--delay: <?php echo $i * 0.06; ?>s;">
-                        <div class="agro-category-icon" aria-hidden="true"></div>
-                        <h3><?php echo htmlspecialchars($cat['title']); ?></h3>
-                        <p><?php echo htmlspecialchars($cat['blurb']); ?></p>
-                    </article>
-                <?php endforeach; ?>
-            </div>
-        </div>
-    </section>
-
     <!-- Shop products (managed in Admin → Agro Shop Items) -->
     <section class="agro-products-section">
         <div class="container">
@@ -125,15 +89,16 @@ include dirname(__DIR__) . '/includes/navbar.php';
                             $stockClass = 'agro-stock-out';
                             $stockLabel = 'Out of stock';
                         }
+                        $pdpUrl = BASE_URL . '/pages/agro-product.php?id=' . (int) $prod['id'];
                         ?>
-                        <article class="agro-product-card reveal-on-scroll" style="--delay: <?php echo $i * 0.07; ?>s;">
-                            <div class="agro-product-visual">
+                        <article class="agro-product-card agro-gallery-swap reveal-on-scroll" style="--delay: <?php echo $i * 0.07; ?>s;">
+                            <a class="agro-product-visual" href="<?php echo htmlspecialchars($pdpUrl); ?>">
                                 <?php if ($mainRel !== '' && is_file($mainAbs)): ?>
                                     <img class="agro-product-main-img" src="<?php echo htmlspecialchars($mainUrl); ?>" alt="<?php echo htmlspecialchars($prod['name']); ?>">
                                 <?php else: ?>
                                     <div class="agro-product-placeholder"><?php echo htmlspecialchars($prod['name']); ?></div>
                                 <?php endif; ?>
-                            </div>
+                            </a>
                             <?php if (count($galleryRels) > 0): ?>
                                 <div class="agro-product-thumbs" role="group" aria-label="More photos">
                                     <?php foreach ($galleryRels as $gRel): ?>
@@ -154,17 +119,53 @@ include dirname(__DIR__) . '/includes/navbar.php';
                                 <h3><?php echo htmlspecialchars($prod['name']); ?></h3>
                                 <p class="agro-product-price">LKR <?php echo htmlspecialchars(number_format((float) $prod['price'], 2)); ?></p>
                                 <?php if ($stock === 'out_of_stock'): ?>
-                                    <span class="agro-btn agro-btn-outline agro-btn-disabled" aria-disabled="true">Unavailable</span>
+                                    <a class="agro-btn agro-btn-outline" href="<?php echo htmlspecialchars($pdpUrl); ?>">View details</a>
                                 <?php elseif ($stock === 'pre_order'): ?>
-                                    <a class="agro-btn agro-btn-outline" href="<?php echo BASE_URL; ?>/contact.php">Pre-order</a>
+                                    <a class="agro-btn agro-btn-outline" href="<?php echo htmlspecialchars($pdpUrl); ?>">Pre-order</a>
                                 <?php else: ?>
-                                    <a class="agro-btn agro-btn-outline" href="<?php echo BASE_URL; ?>/contact.php">Order Now</a>
+                                    <a class="agro-btn agro-btn-outline" href="<?php echo htmlspecialchars($pdpUrl); ?>">Order Now</a>
                                 <?php endif; ?>
                             </div>
                         </article>
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>
+        </div>
+    </section>
+
+    <!-- About -->
+    <section class="agro-about-section">
+        <div class="container agro-about-grid">
+            <div class="agro-about-content reveal-on-scroll reveal-left">
+                <h2>Trusted Agro Solutions</h2>
+                <p>Our agro division focuses on delivering fresh, reliable, and sustainable agricultural products sourced from trusted suppliers.</p>
+            </div>
+            <div class="agro-about-media reveal-on-scroll reveal-right">
+                <?php if (file_exists($agroImagePath)): ?>
+                    <img src="<?php echo BASE_URL; ?>/assets/images/agro.jpg" alt="Nexora Agro — agricultural products and plants">
+                <?php else: ?>
+                    <div class="agro-image-fallback">Add assets/images/agro.jpg</div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories -->
+    <section class="agro-categories-section">
+        <div class="container">
+            <div class="section-heading agro-section-heading reveal-on-scroll">
+                <h2>Product Categories</h2>
+                <p>Everything you need to grow with confidence — from seed to harvest and display.</p>
+            </div>
+            <div class="agro-categories-grid">
+                <?php foreach ($agroCategories as $i => $cat): ?>
+                    <article class="agro-category-card reveal-on-scroll" style="--delay: <?php echo $i * 0.06; ?>s;">
+                        <div class="agro-category-icon" aria-hidden="true"></div>
+                        <h3><?php echo htmlspecialchars($cat['title']); ?></h3>
+                        <p><?php echo htmlspecialchars($cat['blurb']); ?></p>
+                    </article>
+                <?php endforeach; ?>
+            </div>
         </div>
     </section>
 

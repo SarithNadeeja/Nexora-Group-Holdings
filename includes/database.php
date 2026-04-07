@@ -104,11 +104,138 @@ function nexora_agro_shop_items_ensure_table(PDO $pdo): void
             name VARCHAR(255) NOT NULL,
             price DECIMAL(12, 2) NOT NULL DEFAULT 0,
             stock_status VARCHAR(20) NOT NULL DEFAULT 'in_stock',
+            description TEXT,
             image_main VARCHAR(500),
             image_gallery_1 VARCHAR(500),
             image_gallery_2 VARCHAR(500),
             image_gallery_3 VARCHAR(500),
             image_gallery_4 VARCHAR(500),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ");
+    $check = $pdo->query("
+        SELECT 1 FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'agro_shop_items' AND column_name = 'description'
+    ");
+    if ($check && $check->fetchColumn() === false) {
+        $pdo->exec('ALTER TABLE agro_shop_items ADD COLUMN description TEXT');
+    }
+}
+
+/**
+ * Phone & email per division for public contact areas (PostgreSQL).
+ */
+function nexora_division_contacts_ensure_table(PDO $pdo): void
+{
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS division_contact_settings (
+            division VARCHAR(20) PRIMARY KEY,
+            phone VARCHAR(80) NOT NULL DEFAULT '',
+            email VARCHAR(180) NOT NULL DEFAULT '',
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ");
+    $seed = [
+        ['digital', '+94 77 123 4567', 'digital@nexora.lk'],
+        ['agro', '+94 77 123 4567', 'agro@nexora.lk'],
+        ['printing', '+94 77 123 4567', 'printing@nexora.lk'],
+    ];
+    $ins = $pdo->prepare(
+        'INSERT INTO division_contact_settings (division, phone, email) VALUES (?, ?, ?) ON CONFLICT (division) DO NOTHING'
+    );
+    foreach ($seed as $row) {
+        $ins->execute($row);
+    }
+}
+
+/**
+ * Admin panel users (PostgreSQL). Passwords stored with password_hash().
+ * Seeds default admin/admin123 when the table is empty (change after first login).
+ */
+function nexora_admin_users_ensure_table(PDO $pdo): void
+{
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS admin_users (
+            id SERIAL PRIMARY KEY,
+            username VARCHAR(64) NOT NULL UNIQUE,
+            password_hash VARCHAR(255) NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ");
+
+    $count = (int) $pdo->query('SELECT COUNT(*) FROM admin_users')->fetchColumn();
+    if ($count === 0) {
+        $hash = password_hash('admin123', PASSWORD_DEFAULT);
+        $pdo->prepare('INSERT INTO admin_users (username, password_hash) VALUES (?, ?)')->execute(['admin', $hash]);
+    }
+}
+
+/**
+ * Agro order requests captured from the product page modal.
+ */
+function nexora_agro_orders_ensure_table(PDO $pdo): void
+{
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS agro_orders (
+            id SERIAL PRIMARY KEY,
+            product_id INTEGER NOT NULL,
+            product_price DECIMAL(12, 2) NOT NULL DEFAULT 0,
+            customer_name VARCHAR(120) NOT NULL,
+            customer_phone VARCHAR(40) NOT NULL,
+            customer_email VARCHAR(180) NOT NULL,
+            address_line1 VARCHAR(220) NOT NULL,
+            address_line2 VARCHAR(220),
+            city VARCHAR(120) NOT NULL,
+            province VARCHAR(120) NOT NULL,
+            status VARCHAR(20) NOT NULL DEFAULT 'new',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ");
+}
+
+/**
+ * Printing order requests captured from the printing page modal.
+ */
+function nexora_printing_orders_ensure_table(PDO $pdo): void
+{
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS printing_orders (
+            id SERIAL PRIMARY KEY,
+            document_id INTEGER NOT NULL,
+            document_price DECIMAL(12, 2) NOT NULL DEFAULT 0,
+            customer_name VARCHAR(120) NOT NULL,
+            customer_phone VARCHAR(40) NOT NULL,
+            customer_email VARCHAR(180) NOT NULL,
+            address_line1 VARCHAR(220) NOT NULL,
+            address_line2 VARCHAR(220),
+            city VARCHAR(120) NOT NULL,
+            province VARCHAR(120) NOT NULL,
+            status VARCHAR(20) NOT NULL DEFAULT 'new',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ");
+}
+
+/**
+ * Printing custom order requests from "Contact us for custom printout".
+ */
+function nexora_printing_custom_orders_ensure_table(PDO $pdo): void
+{
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS printing_custom_orders (
+            id SERIAL PRIMARY KEY,
+            custom_request TEXT NOT NULL,
+            customer_name VARCHAR(120) NOT NULL,
+            customer_phone VARCHAR(40) NOT NULL,
+            customer_email VARCHAR(180) NOT NULL,
+            address_line1 VARCHAR(220) NOT NULL,
+            address_line2 VARCHAR(220),
+            city VARCHAR(120) NOT NULL,
+            province VARCHAR(120) NOT NULL,
+            status VARCHAR(20) NOT NULL DEFAULT 'new',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )

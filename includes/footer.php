@@ -2,6 +2,8 @@
 /**
  * Reusable footer include.
  */
+require_once __DIR__ . '/division_contacts.php';
+$footerDivisionContacts = nexora_division_contacts_all();
 ?>
 <footer class="site-footer">
     <div class="container footer-main">
@@ -33,11 +35,51 @@
             </div>
 
             <div class="footer-col">
-                <h4>Contact Details</h4>
-                <ul class="footer-contact">
-                    <li>Colombo, Sri Lanka</li>
-                    <li><a href="tel:+94771234567">+94 77 123 4567</a></li>
-                    <li><a href="mailto:info@nexora.lk">info@nexora.lk</a></li>
+                <h4>Contact</h4>
+                <p class="footer-contact-address">Colombo, Sri Lanka</p>
+                <ul class="footer-contact footer-contact-divisions">
+                    <li class="footer-contact-division">
+                        <strong>Digital</strong>
+                        <?php if (trim($footerDivisionContacts['digital']['phone']) !== ''): ?>
+                            <a href="<?php echo htmlspecialchars(nexora_phone_tel_href($footerDivisionContacts['digital']['phone'])); ?>"><?php echo htmlspecialchars($footerDivisionContacts['digital']['phone']); ?></a>
+                        <?php else: ?>
+                            <span class="footer-contact-missing">&mdash;</span>
+                        <?php endif; ?>
+                        <span class="footer-contact-sep">&middot;</span>
+                        <?php if (trim($footerDivisionContacts['digital']['email']) !== ''): ?>
+                            <a href="mailto:<?php echo htmlspecialchars($footerDivisionContacts['digital']['email'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($footerDivisionContacts['digital']['email']); ?></a>
+                        <?php else: ?>
+                            <span class="footer-contact-missing">&mdash;</span>
+                        <?php endif; ?>
+                    </li>
+                    <li class="footer-contact-division">
+                        <strong>Agro</strong>
+                        <?php if (trim($footerDivisionContacts['agro']['phone']) !== ''): ?>
+                            <a href="<?php echo htmlspecialchars(nexora_phone_tel_href($footerDivisionContacts['agro']['phone'])); ?>"><?php echo htmlspecialchars($footerDivisionContacts['agro']['phone']); ?></a>
+                        <?php else: ?>
+                            <span class="footer-contact-missing">&mdash;</span>
+                        <?php endif; ?>
+                        <span class="footer-contact-sep">&middot;</span>
+                        <?php if (trim($footerDivisionContacts['agro']['email']) !== ''): ?>
+                            <a href="mailto:<?php echo htmlspecialchars($footerDivisionContacts['agro']['email'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($footerDivisionContacts['agro']['email']); ?></a>
+                        <?php else: ?>
+                            <span class="footer-contact-missing">&mdash;</span>
+                        <?php endif; ?>
+                    </li>
+                    <li class="footer-contact-division">
+                        <strong>Printing</strong>
+                        <?php if (trim($footerDivisionContacts['printing']['phone']) !== ''): ?>
+                            <a href="<?php echo htmlspecialchars(nexora_phone_tel_href($footerDivisionContacts['printing']['phone'])); ?>"><?php echo htmlspecialchars($footerDivisionContacts['printing']['phone']); ?></a>
+                        <?php else: ?>
+                            <span class="footer-contact-missing">&mdash;</span>
+                        <?php endif; ?>
+                        <span class="footer-contact-sep">&middot;</span>
+                        <?php if (trim($footerDivisionContacts['printing']['email']) !== ''): ?>
+                            <a href="mailto:<?php echo htmlspecialchars($footerDivisionContacts['printing']['email'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($footerDivisionContacts['printing']['email']); ?></a>
+                        <?php else: ?>
+                            <span class="footer-contact-missing">&mdash;</span>
+                        <?php endif; ?>
+                    </li>
                 </ul>
             </div>
 

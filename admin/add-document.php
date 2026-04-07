@@ -75,6 +75,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+$printDocuments = [];
+try {
+    $printDocuments = $pdo->query(
+        'SELECT id, name, pages, price, image_path, created_at FROM print_documents ORDER BY id DESC'
+    )->fetchAll(PDO::FETCH_ASSOC);
+} catch (Throwable $e) {
+    $printDocuments = [];
+}
+
+$root = dirname(__DIR__);
+
 include __DIR__ . '/includes/header.php';
 ?>
 <div class="admin-layout">
@@ -100,7 +111,7 @@ include __DIR__ . '/includes/header.php';
                 <label for="pages">Pages</label>
                 <input type="number" id="pages" name="pages" min="1" required>
 
-                <label for="price">Price</label>
+                <label for="price">Price (LKR)</label>
                 <input type="number" id="price" name="price" min="0" step="0.01" required>
 
                 <label for="image_file">Upload Image</label>
@@ -111,6 +122,56 @@ include __DIR__ . '/includes/header.php';
 
                 <button type="submit" class="btn-primary">Save Document</button>
             </form>
+        </section>
+
+        <section class="admin-card" style="margin-top: 20px;">
+            <h2 style="font-size:1.1rem;margin-bottom:4px;">Available documents</h2>
+            <p class="admin-form-hint" style="margin-bottom:12px;">All items shown on the public Printing page. Newest first.</p>
+            <?php if (count($printDocuments) === 0): ?>
+                <p style="color:var(--muted);">No documents yet. Add one using the form above.</p>
+            <?php else: ?>
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th style="width:72px;">Cover</th>
+                                <th>Name</th>
+                                <th style="width:72px;">Pages</th>
+                                <th style="width:110px;">Price (LKR)</th>
+                                <th style="width:160px;">Added</th>
+                                <th style="width:100px;">Preview</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($printDocuments as $doc): ?>
+                                <?php
+                                $imgRel = isset($doc['image_path']) ? trim((string) $doc['image_path']) : '';
+                                $imgAbs = $imgRel !== '' ? $root . '/' . ltrim($imgRel, '/') : '';
+                                $imgUrl = $imgRel !== '' ? BASE_URL . '/' . ltrim($imgRel, '/') : '';
+                                $hasImg = $imgRel !== '' && is_file($imgAbs);
+                                $previewUrl = BASE_URL . '/pages/pdf-view.php?id=' . (int) $doc['id'];
+                                ?>
+                                <tr>
+                                    <td>
+                                        <?php if ($hasImg): ?>
+                                            <img src="<?php echo htmlspecialchars($imgUrl); ?>" alt="" style="width:56px;height:56px;object-fit:cover;border-radius:8px;border:1px solid var(--border);">
+                                        <?php else: ?>
+                                            <span style="color:var(--muted);font-size:0.85rem;">—</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td><strong><?php echo htmlspecialchars((string) $doc['name']); ?></strong></td>
+                                    <td><?php echo (int) $doc['pages']; ?></td>
+                                    <td><?php echo htmlspecialchars(number_format((float) $doc['price'], 2)); ?></td>
+                                    <td style="font-size:0.9rem;color:var(--muted);"><?php echo htmlspecialchars((string) $doc['created_at']); ?></td>
+                                    <td>
+                                        <a href="<?php echo htmlspecialchars($previewUrl); ?>" target="_blank" rel="noopener noreferrer" style="color:var(--primary);font-weight:600;">PDF</a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
         </section>
     </main>
 </div>

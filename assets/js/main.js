@@ -13,7 +13,7 @@
     var showcaseTrack = document.querySelector('.digital-showcase-track[data-auto-scroll="true"]');
     var testimonialCarousel = document.getElementById('digitalTestimonialsCarousel');
     var contactPageForm = document.querySelector('.contact-page-form');
-    var agroProductCards = document.querySelectorAll('.agro-product-card');
+    var agroGallerySwaps = document.querySelectorAll('.agro-gallery-swap');
     var slideIndex = 0;
 
     function syncHeaderTheme() {
@@ -140,13 +140,15 @@
         });
     }
 
-    agroProductCards.forEach(function (card) {
+    agroGallerySwaps.forEach(function (card) {
         var mainImg = card.querySelector('.agro-product-main-img');
         if (!mainImg) {
             return;
         }
         card.querySelectorAll('.agro-product-thumb').forEach(function (thumb) {
-            thumb.addEventListener('click', function () {
+            thumb.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
                 var src = thumb.getAttribute('data-src');
                 if (src) {
                     mainImg.src = src;
@@ -154,5 +156,475 @@
             });
         });
     });
+
+    var agroOrderModal = document.getElementById('agroOrderModal');
+    var agroWaPayloadEl = document.getElementById('agroWaOrderPayload');
+    var agroWaOpenBtn = document.getElementById('agroWaOrderOpen');
+    var agroWaForm = document.getElementById('agroOrderWaForm');
+    var agroOrderData = null;
+
+    if (agroWaPayloadEl) {
+        try {
+            agroOrderData = JSON.parse(agroWaPayloadEl.textContent.trim());
+        } catch (ignore) {
+            agroOrderData = null;
+        }
+    }
+
+    function agroOrderModalShow() {
+        if (!agroOrderModal) {
+            return;
+        }
+        agroOrderModal.classList.add('is-open');
+        agroOrderModal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        var errEl = document.getElementById('agroOrderModalError');
+        if (errEl) {
+            errEl.hidden = true;
+            errEl.textContent = '';
+        }
+        var firstInput = agroOrderModal.querySelector('input');
+        if (firstInput) {
+            firstInput.focus();
+        }
+    }
+
+    function agroOrderModalHide() {
+        if (!agroOrderModal) {
+            return;
+        }
+        agroOrderModal.classList.remove('is-open');
+        agroOrderModal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    }
+
+    if (agroWaOpenBtn && agroOrderModal) {
+        agroWaOpenBtn.addEventListener('click', agroOrderModalShow);
+    }
+
+    if (agroOrderModal) {
+        agroOrderModal.querySelectorAll('[data-agro-modal-close]').forEach(function (el) {
+            el.addEventListener('click', agroOrderModalHide);
+        });
+    }
+
+    document.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Escape' && agroOrderModal && agroOrderModal.classList.contains('is-open')) {
+            agroOrderModalHide();
+        }
+    });
+
+    var printPdfModal = document.getElementById('printPdfModal');
+    var printPdfIframe = document.getElementById('printPdfIframe');
+    var printPdfPreviewBtns = document.querySelectorAll('.print-pdf-preview-btn');
+
+    function printPdfModalShow(url) {
+        if (!printPdfModal || !printPdfIframe) {
+            return;
+        }
+        printPdfIframe.src = url;
+        printPdfModal.classList.add('is-open');
+        printPdfModal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function printPdfModalHide() {
+        if (!printPdfModal || !printPdfIframe) {
+            return;
+        }
+        printPdfModal.classList.remove('is-open');
+        printPdfModal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        printPdfIframe.src = 'about:blank';
+    }
+
+    printPdfPreviewBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var url = btn.getAttribute('data-pdf-preview-url');
+            if (url) {
+                printPdfModalShow(url);
+            }
+        });
+    });
+
+    if (printPdfModal) {
+        printPdfModal.querySelectorAll('[data-print-pdf-close]').forEach(function (el) {
+            el.addEventListener('click', printPdfModalHide);
+        });
+    }
+
+    document.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Escape' && printPdfModal && printPdfModal.classList.contains('is-open')) {
+            printPdfModalHide();
+        }
+    });
+
+    var printOrderModal = document.getElementById('printOrderModal');
+    var printOrderPayloadEl = document.getElementById('printOrderPayload');
+    var printOrderForm = document.getElementById('printOrderWaForm');
+    var printOrderPreviewIframe = document.getElementById('printOrderPreviewIframe');
+    var printOrderOpenBtns = document.querySelectorAll('.print-order-open-btn');
+    var printOrderData = null;
+
+    if (printOrderPayloadEl) {
+        try {
+            printOrderData = JSON.parse(printOrderPayloadEl.textContent.trim());
+        } catch (ignorePrintOrderPayload) {
+            printOrderData = null;
+        }
+    }
+
+    function printOrderModalShow(documentId, documentPrice, previewUrl) {
+        if (!printOrderModal) {
+            return;
+        }
+        var idField = document.getElementById('print_order_document_id');
+        var priceField = document.getElementById('print_order_document_price');
+        if (idField) {
+            idField.value = String(documentId || '');
+        }
+        if (priceField) {
+            priceField.value = String(documentPrice || '');
+        }
+        if (printOrderPreviewIframe) {
+            printOrderPreviewIframe.src = previewUrl || 'about:blank';
+        }
+        var errEl = document.getElementById('printOrderModalError');
+        if (errEl) {
+            errEl.hidden = true;
+            errEl.textContent = '';
+        }
+        printOrderModal.classList.add('is-open');
+        printOrderModal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function printOrderModalHide() {
+        if (!printOrderModal) {
+            return;
+        }
+        printOrderModal.classList.remove('is-open');
+        printOrderModal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        if (printOrderPreviewIframe) {
+            printOrderPreviewIframe.src = 'about:blank';
+        }
+    }
+
+    printOrderOpenBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var documentId = Number(btn.getAttribute('data-print-order-id') || 0);
+            var documentPrice = Number(btn.getAttribute('data-print-order-price') || 0);
+            var previewUrl = btn.getAttribute('data-print-order-preview-url') || '';
+            if (documentId > 0) {
+                printOrderModalShow(documentId, documentPrice, previewUrl);
+            }
+        });
+    });
+
+    if (printOrderModal) {
+        printOrderModal.querySelectorAll('[data-print-order-close]').forEach(function (el) {
+            el.addEventListener('click', printOrderModalHide);
+        });
+    }
+
+    document.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Escape' && printOrderModal && printOrderModal.classList.contains('is-open')) {
+            printOrderModalHide();
+        }
+    });
+
+    if (agroWaForm && agroOrderData) {
+        agroWaForm.addEventListener('submit', function (ev) {
+            ev.preventDefault();
+            var errBox = document.getElementById('agroOrderModalError');
+            var digits = String(agroOrderData.waDigits || '').replace(/\D/g, '');
+            var submitUrl = String(agroOrderData.submitUrl || '');
+            if (!digits || digits.length < 8) {
+                if (errBox) {
+                    errBox.textContent = 'WhatsApp is not configured yet. Please use the Contact page, or ask your administrator to set NEXORA_WHATSAPP_ORDER_NUMBER in config (or the Nexora Agro phone in Admin → Contact Details).';
+                    errBox.hidden = false;
+                }
+                return;
+            }
+            if (!submitUrl) {
+                if (errBox) {
+                    errBox.textContent = 'Order endpoint is not configured.';
+                    errBox.hidden = false;
+                }
+                return;
+            }
+
+            var cName = (document.getElementById('agro_ord_name').value || '').trim();
+            var cPhone = (document.getElementById('agro_ord_phone').value || '').trim();
+            var cEmail = (document.getElementById('agro_ord_email').value || '').trim();
+            var addr1 = (document.getElementById('agro_ord_addr1').value || '').trim();
+            var addr2 = (document.getElementById('agro_ord_addr2').value || '').trim();
+            var city = (document.getElementById('agro_ord_city').value || '').trim();
+            var province = (document.getElementById('agro_ord_province').value || '').trim();
+
+            if (!cName || !cPhone || !cEmail || !addr1 || !city || !province) {
+                if (errBox) {
+                    errBox.textContent = 'Please fill in all required fields.';
+                    errBox.hidden = false;
+                }
+                agroWaForm.reportValidity();
+                return;
+            }
+            var submitBtn = agroWaForm.querySelector('button[type="submit"]');
+            var originalBtnText = submitBtn ? submitBtn.textContent : '';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Submitting...';
+            }
+            if (errBox) {
+                errBox.hidden = true;
+                errBox.textContent = '';
+            }
+
+            fetch(submitUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    productId: Number(agroOrderData.productId || 0),
+                    productPrice: Number(agroOrderData.productPrice || 0),
+                    customerName: cName,
+                    customerPhone: cPhone,
+                    customerEmail: cEmail,
+                    addressLine1: addr1,
+                    addressLine2: addr2,
+                    city: city,
+                    province: province
+                })
+            }).then(function (res) {
+                return res.json().catch(function () {
+                    return { ok: false, message: 'Invalid server response.' };
+                });
+            }).then(function (data) {
+                if (!data || !data.ok || !data.waUrl) {
+                    throw new Error((data && data.message) ? data.message : 'Could not create order.');
+                }
+                window.open(data.waUrl, '_blank', 'noopener,noreferrer');
+                agroOrderModalHide();
+            }).catch(function (err) {
+                if (errBox) {
+                    errBox.textContent = err && err.message ? err.message : 'Could not submit order right now.';
+                    errBox.hidden = false;
+                }
+            }).finally(function () {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalBtnText;
+                }
+            });
+        });
+    }
+
+    if (printOrderForm && printOrderData) {
+        printOrderForm.addEventListener('submit', function (ev) {
+            ev.preventDefault();
+            var errBox = document.getElementById('printOrderModalError');
+            var submitUrl = String(printOrderData.submitUrl || '');
+            if (!submitUrl) {
+                if (errBox) {
+                    errBox.textContent = 'Order endpoint is not configured.';
+                    errBox.hidden = false;
+                }
+                return;
+            }
+
+            var documentId = Number((document.getElementById('print_order_document_id').value || '').trim());
+            var documentPrice = Number((document.getElementById('print_order_document_price').value || '').trim());
+            var cName = (document.getElementById('print_ord_name').value || '').trim();
+            var cPhone = (document.getElementById('print_ord_phone').value || '').trim();
+            var cEmail = (document.getElementById('print_ord_email').value || '').trim();
+            var addr1 = (document.getElementById('print_ord_addr1').value || '').trim();
+            var addr2 = (document.getElementById('print_ord_addr2').value || '').trim();
+            var city = (document.getElementById('print_ord_city').value || '').trim();
+            var province = (document.getElementById('print_ord_province').value || '').trim();
+
+            if (!documentId || !cName || !cPhone || !cEmail || !addr1 || !city || !province) {
+                if (errBox) {
+                    errBox.textContent = 'Please fill in all required fields.';
+                    errBox.hidden = false;
+                }
+                printOrderForm.reportValidity();
+                return;
+            }
+
+            var submitBtn = printOrderForm.querySelector('button[type="submit"]');
+            var originalBtnText = submitBtn ? submitBtn.textContent : '';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Submitting...';
+            }
+            if (errBox) {
+                errBox.hidden = true;
+                errBox.textContent = '';
+            }
+
+            fetch(submitUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    documentId: documentId,
+                    documentPrice: documentPrice,
+                    customerName: cName,
+                    customerPhone: cPhone,
+                    customerEmail: cEmail,
+                    addressLine1: addr1,
+                    addressLine2: addr2,
+                    city: city,
+                    province: province
+                })
+            }).then(function (res) {
+                return res.json().catch(function () {
+                    return { ok: false, message: 'Invalid server response.' };
+                });
+            }).then(function (data) {
+                if (!data || !data.ok || !data.waUrl) {
+                    throw new Error((data && data.message) ? data.message : 'Could not create order.');
+                }
+                window.open(data.waUrl, '_blank', 'noopener,noreferrer');
+                printOrderModalHide();
+            }).catch(function (err) {
+                if (errBox) {
+                    errBox.textContent = err && err.message ? err.message : 'Could not submit order right now.';
+                    errBox.hidden = false;
+                }
+            }).finally(function () {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalBtnText;
+                }
+            });
+        });
+    }
+
+    var printCustomOrderModal = document.getElementById('printCustomOrderModal');
+    var printCustomOrderForm = document.getElementById('printCustomOrderWaForm');
+    var printCustomOrderOpenBtns = document.querySelectorAll('.print-custom-order-open-btn');
+
+    function printCustomOrderModalShow() {
+        if (!printCustomOrderModal) {
+            return;
+        }
+        var errEl = document.getElementById('printCustomOrderModalError');
+        if (errEl) {
+            errEl.hidden = true;
+            errEl.textContent = '';
+        }
+        printCustomOrderModal.classList.add('is-open');
+        printCustomOrderModal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function printCustomOrderModalHide() {
+        if (!printCustomOrderModal) {
+            return;
+        }
+        printCustomOrderModal.classList.remove('is-open');
+        printCustomOrderModal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    }
+
+    printCustomOrderOpenBtns.forEach(function (btn) {
+        btn.addEventListener('click', printCustomOrderModalShow);
+    });
+
+    if (printCustomOrderModal) {
+        printCustomOrderModal.querySelectorAll('[data-print-custom-order-close]').forEach(function (el) {
+            el.addEventListener('click', printCustomOrderModalHide);
+        });
+    }
+
+    document.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Escape' && printCustomOrderModal && printCustomOrderModal.classList.contains('is-open')) {
+            printCustomOrderModalHide();
+        }
+    });
+
+    if (printCustomOrderForm && printOrderData) {
+        printCustomOrderForm.addEventListener('submit', function (ev) {
+            ev.preventDefault();
+            var errBox = document.getElementById('printCustomOrderModalError');
+            var submitUrl = String(printOrderData.customSubmitUrl || '');
+            if (!submitUrl) {
+                if (errBox) {
+                    errBox.textContent = 'Custom order endpoint is not configured.';
+                    errBox.hidden = false;
+                }
+                return;
+            }
+
+            var customRequest = (document.getElementById('print_custom_request').value || '').trim();
+            var cName = (document.getElementById('print_custom_name').value || '').trim();
+            var cPhone = (document.getElementById('print_custom_phone').value || '').trim();
+            var cEmail = (document.getElementById('print_custom_email').value || '').trim();
+            var addr1 = (document.getElementById('print_custom_addr1').value || '').trim();
+            var addr2 = (document.getElementById('print_custom_addr2').value || '').trim();
+            var city = (document.getElementById('print_custom_city').value || '').trim();
+            var province = (document.getElementById('print_custom_province').value || '').trim();
+
+            if (!customRequest || !cName || !cPhone || !cEmail || !addr1 || !city || !province) {
+                if (errBox) {
+                    errBox.textContent = 'Please fill in all required fields.';
+                    errBox.hidden = false;
+                }
+                printCustomOrderForm.reportValidity();
+                return;
+            }
+
+            var submitBtn = printCustomOrderForm.querySelector('button[type="submit"]');
+            var originalBtnText = submitBtn ? submitBtn.textContent : '';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Submitting...';
+            }
+            if (errBox) {
+                errBox.hidden = true;
+                errBox.textContent = '';
+            }
+
+            fetch(submitUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    customRequest: customRequest,
+                    customerName: cName,
+                    customerPhone: cPhone,
+                    customerEmail: cEmail,
+                    addressLine1: addr1,
+                    addressLine2: addr2,
+                    city: city,
+                    province: province
+                })
+            }).then(function (res) {
+                return res.json().catch(function () {
+                    return { ok: false, message: 'Invalid server response.' };
+                });
+            }).then(function (data) {
+                if (!data || !data.ok || !data.waUrl) {
+                    throw new Error((data && data.message) ? data.message : 'Could not create order.');
+                }
+                window.open(data.waUrl, '_blank', 'noopener,noreferrer');
+                printCustomOrderModalHide();
+            }).catch(function (err) {
+                if (errBox) {
+                    errBox.textContent = err && err.message ? err.message : 'Could not submit order right now.';
+                    errBox.hidden = false;
+                }
+            }).finally(function () {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalBtnText;
+                }
+            });
+        });
+    }
 })();
 

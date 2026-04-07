@@ -40,13 +40,18 @@ if (!isset($adminPageTitle)) {
 
         .admin-form { display: grid; gap: 12px; }
         .admin-form label { font-weight: 600; }
-        .admin-form input {
+        .admin-form input,
+        .admin-form textarea {
             width: 100%;
             border: 1px solid var(--border);
             border-radius: 10px;
             padding: 11px 12px;
             font: inherit;
             background: #fcfdff;
+        }
+        .admin-form textarea {
+            min-height: 120px;
+            resize: vertical;
         }
         .btn-primary {
             display: inline-block;
@@ -59,6 +64,46 @@ if (!isset($adminPageTitle)) {
             font-weight: 600;
         }
         .btn-primary:hover { background: #1d4ed8; }
+
+        .btn-danger {
+            display: inline-block;
+            background: #dc2626;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 8px 14px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .btn-danger:hover { background: #b91c1c; }
+
+        .admin-table-wrap { overflow-x: auto; margin-top: 12px; }
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+        .admin-table th,
+        .admin-table td {
+            border: 1px solid var(--border);
+            padding: 10px 12px;
+            text-align: left;
+        }
+        .admin-table th { background: #f8fafc; color: var(--muted); font-weight: 600; }
+        .admin-table tr:nth-child(even) td { background: #fafbfc; }
+
+        .admin-form-hint { font-size: 0.85rem; color: var(--muted); margin-top: -6px; }
+        fieldset.admin-fieldset {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        fieldset.admin-fieldset legend {
+            font-weight: 700;
+            padding: 0 8px;
+        }
 
         .alert-success {
             border: 1px solid #bbf7d0;
