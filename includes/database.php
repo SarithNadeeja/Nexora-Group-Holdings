@@ -28,9 +28,9 @@ function nexora_db_connect(): ?PDO
 
     $dbHost = getenv('DB_HOST') ?: '127.0.0.1';
     $dbPort = (int) (getenv('DB_PORT') ?: 5432);
-    $dbName = getenv('DB_NAME') ?: 'nexora';
-    $dbUser = getenv('DB_USER') ?: 'postgres';
-    $dbPass = getenv('DB_PASS') ?: '1234';
+    $dbName = getenv('DB_NAME') ?: 'nexora_db';
+    $dbUser = getenv('DB_USER') ?: 'nexora_user';
+    $dbPass = getenv('DB_PASS') ?: 'nexoragroupholdings';
 
     $dsn = sprintf('pgsql:host=%s;port=%d;dbname=%s', $dbHost, $dbPort, $dbName);
 

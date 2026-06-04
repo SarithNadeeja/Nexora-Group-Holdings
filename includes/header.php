@@ -13,6 +13,7 @@ if (!defined('SITE_NAME')) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="<?php echo isset($metaDescription) ? htmlspecialchars($metaDescription) : 'Nexora Group Holdings - Modern corporate services across digital, agro, and printing solutions.'; ?>">
     <title><?php echo isset($pageTitle) ? htmlspecialchars($pageTitle) . ' | ' . SITE_NAME : SITE_NAME; ?></title>
+    <link rel="icon" href="<?php echo nexora_url('assets/images/logos/main.jpeg'); ?>" type="image/jpeg">
     <?php if (!empty($metaOgUrl)): ?>
         <meta property="og:type" content="product">
         <meta property="og:url" content="<?php echo htmlspecialchars($metaOgUrl); ?>">

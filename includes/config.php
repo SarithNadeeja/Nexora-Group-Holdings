@@ -23,11 +23,23 @@ if (!empty($documentRoot) && strpos($projectRoot, $documentRoot) === 0) {
 }
 
 $normalizedBaseUrl = rtrim($baseUrl, '/');
-if ($normalizedBaseUrl === '') {
-    $normalizedBaseUrl = '/';
-}
-
+// Empty string = site at document root. Do NOT use '/' here: templates use
+// BASE_URL . '/assets/...' which would become '//assets/...' (protocol-relative
+// URL to host "assets") and cause net::ERR_NAME_NOT_RESOLVED in production.
 define('BASE_URL', $normalizedBaseUrl);
+
+/**
+ * Build a root-relative path for links and static assets (always starts with /).
+ */
+function nexora_url(string $path = ''): string
+{
+    $path = ltrim(str_replace('\\', '/', $path), '/');
+    $base = BASE_URL;
+    if ($base === '') {
+        return $path === '' ? '/' : '/' . $path;
+    }
+    return $path === '' ? $base : rtrim($base, '/') . '/' . $path;
+}
 
 /**
  * Build an absolute URL for the current site (for sharing / WhatsApp messages).
@@ -38,7 +50,7 @@ function nexora_site_absolute_url(string $path = ''): string
     $path = ltrim(str_replace('\\', '/', $path), '/');
     $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     $host = isset($_SERVER['HTTP_HOST']) ? (string) $_SERVER['HTTP_HOST'] : 'localhost';
-    $base = BASE_URL === '/' ? '' : BASE_URL;
+    $base = BASE_URL;
     $prefix = rtrim($scheme . '://' . $host . $base, '/');
     return $path === '' ? $prefix : $prefix . '/' . $path;
 }

@@ -21,8 +21,8 @@
 
         <?php
         $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
-        $basePath = parse_url(BASE_URL, PHP_URL_PATH);
-        if (!empty($basePath) && strpos($currentPath, $basePath) === 0) {
+        $basePath = BASE_URL;
+        if ($basePath !== '' && strpos($currentPath, $basePath) === 0) {
             $currentPath = substr($currentPath, strlen($basePath));
         }
         $currentPath = '/' . ltrim((string) $currentPath, '/');
