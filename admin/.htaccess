@@ -1,0 +1,3 @@
+# Serve login flow at /admin/ instead of a directory listing.
+DirectoryIndex index.php login.php
+Options -Indexes
