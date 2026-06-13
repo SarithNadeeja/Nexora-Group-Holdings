@@ -1,9 +1,8 @@
 <?php
-require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/gmail-smtp.php';
 
 /**
- * Send agro order status email notification.
- * Uses PHP mail() with Gmail-from placeholder values until SMTP is configured.
+ * Send agro order status email notification via Gmail SMTP.
  */
 function nexora_send_agro_order_status_email(string $toEmail, string $customerName, int $orderId, int $productId, string $status): bool
 {
@@ -24,21 +23,8 @@ function nexora_send_agro_order_status_email(string $toEmail, string $customerNa
         'Thank you,',
         'Nexora Agro Team',
     ];
-    $body = implode("\r\n", $bodyLines);
 
-    $from = trim((string) NEXORA_GMAIL_FROM);
-    if ($from === '' || !filter_var($from, FILTER_VALIDATE_EMAIL)) {
-        $from = 'no-reply@nexora.local';
-    }
-
-    $headers = [
-        'MIME-Version: 1.0',
-        'Content-Type: text/plain; charset=UTF-8',
-        'From: Nexora Agro <' . $from . '>',
-        'Reply-To: ' . $from,
-    ];
-
-    return @mail($toEmail, $subject, $body, implode("\r\n", $headers));
+    return nexora_gmail_send($toEmail, $subject, implode("\n", $bodyLines), 'Nexora Agro');
 }
 
 /**
@@ -63,21 +49,8 @@ function nexora_send_printing_order_status_email(string $toEmail, string $custom
         'Thank you,',
         'Nexora Printing Team',
     ];
-    $body = implode("\r\n", $bodyLines);
 
-    $from = trim((string) NEXORA_GMAIL_FROM);
-    if ($from === '' || !filter_var($from, FILTER_VALIDATE_EMAIL)) {
-        $from = 'no-reply@nexora.local';
-    }
-
-    $headers = [
-        'MIME-Version: 1.0',
-        'Content-Type: text/plain; charset=UTF-8',
-        'From: Nexora Printing <' . $from . '>',
-        'Reply-To: ' . $from,
-    ];
-
-    return @mail($toEmail, $subject, $body, implode("\r\n", $headers));
+    return nexora_gmail_send($toEmail, $subject, implode("\n", $bodyLines), 'Nexora Printing');
 }
 
 /**
@@ -89,8 +62,9 @@ function nexora_send_printing_custom_order_status_email(string $toEmail, string 
     if ($toEmail === '' || !filter_var($toEmail, FILTER_VALIDATE_EMAIL)) {
         return false;
     }
+
     $subject = 'Nexora Printing Custom Order Update - Order #' . $orderId;
-    $body = implode("\r\n", [
+    $body = implode("\n", [
         'Hello ' . $customerName . ',',
         '',
         'Your Nexora Printing custom printout order status has been updated.',
@@ -100,15 +74,6 @@ function nexora_send_printing_custom_order_status_email(string $toEmail, string 
         'Thank you,',
         'Nexora Printing Team',
     ]);
-    $from = trim((string) NEXORA_GMAIL_FROM);
-    if ($from === '' || !filter_var($from, FILTER_VALIDATE_EMAIL)) {
-        $from = 'no-reply@nexora.local';
-    }
-    $headers = [
-        'MIME-Version: 1.0',
-        'Content-Type: text/plain; charset=UTF-8',
-        'From: Nexora Printing <' . $from . '>',
-        'Reply-To: ' . $from,
-    ];
-    return @mail($toEmail, $subject, $body, implode("\r\n", $headers));
+
+    return nexora_gmail_send($toEmail, $subject, $body, 'Nexora Printing');
 }

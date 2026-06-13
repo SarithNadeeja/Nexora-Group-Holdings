@@ -5,6 +5,7 @@
 (function () {
     var siteHeader = document.querySelector('.site-header');
     var homeHero = document.getElementById('homeHero');
+    var heroVideo = document.querySelector('.hero-video');
     var menuToggle = document.getElementById('menuToggle');
     var mainNav = document.getElementById('mainNav');
     var heroSlides = document.querySelectorAll('#heroSlides .hero-slide');
@@ -15,6 +16,30 @@
     var contactPageForm = document.querySelector('.contact-page-form');
     var agroGallerySwaps = document.querySelectorAll('.agro-gallery-swap');
     var slideIndex = 0;
+
+    function showHeroVideoFallback() {
+        if (homeHero) {
+            homeHero.classList.add('hero-video-unavailable');
+        }
+    }
+
+    if (heroVideo && homeHero) {
+        heroVideo.addEventListener('error', showHeroVideoFallback);
+        heroVideo.addEventListener('stalled', showHeroVideoFallback);
+
+        var playPromise = heroVideo.play();
+        if (playPromise && typeof playPromise.catch === 'function') {
+            playPromise.catch(showHeroVideoFallback);
+        }
+
+        window.setTimeout(function () {
+            if (heroVideo.readyState === 0 && heroVideo.networkState === 3) {
+                showHeroVideoFallback();
+            }
+        }, 10000);
+    } else if (homeHero && !heroVideo) {
+        showHeroVideoFallback();
+    }
 
     function syncHeaderTheme() {
         if (!siteHeader || !homeHero) {

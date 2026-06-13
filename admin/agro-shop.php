@@ -4,16 +4,24 @@ requireAdminAuth();
 require_once __DIR__ . '/includes/db.php';
 
 require_once dirname(__DIR__) . '/includes/config.php';
+require_once dirname(__DIR__) . '/includes/upload-helpers.php';
 
 $adminPageTitle = 'Agro Shop Items';
 $success = '';
 $error = '';
 
+$root = dirname(__DIR__);
+$agroItemsUploadRoot = $root . '/assets/uploads/agro/items';
+if (!nexora_ensure_upload_dir($agroItemsUploadRoot)) {
+    $error = 'Upload folder is not writable. On the server, set permissions on assets/uploads/agro/ (chmod 775 or 777).';
+}
+
+$uploadMaxLabel = ini_get('upload_max_filesize') ?: '2M';
+
 if (isset($_GET['saved']) && $_GET['saved'] === '1') {
     $success = 'Product updated.';
 }
 
-$root = dirname(__DIR__);
 $allowedExt = ['jpg', 'jpeg', 'png', 'webp'];
 
 $validStock = ['pre_order', 'out_of_stock', 'in_stock'];
@@ -28,7 +36,7 @@ function agro_shop_validate_image(array $file, array $allowedExt, bool $required
         return '__skip__';
     }
     if ($file['error'] !== UPLOAD_ERR_OK) {
-        $err = 'Image upload failed.';
+        $err = nexora_upload_error_message((int) $file['error']);
         return null;
     }
     $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
@@ -106,9 +114,9 @@ function agro_shop_delete_item_assets(string $root, array $row, int $id): void
     agro_shop_remove_item_directory($root, $id);
 }
 
-function agro_shop_save_image(string $tmp, string $destPath): bool
+function agro_shop_save_image(string $tmp, string $destPath, string $ext): bool
 {
-    return move_uploaded_file($tmp, $destPath);
+    return nexora_save_uploaded_image($tmp, $destPath, $ext);
 }
 
 $editId = isset($_GET['edit']) ? (int) $_GET['edit'] : 0;
@@ -202,8 +210,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                         $mainName = 'main.' . $mainExt;
                         $mainAbs = $itemDir . '/' . $mainName;
-                        if (!agro_shop_save_image($_FILES['image_main']['tmp_name'], $mainAbs)) {
-                            throw new RuntimeException('Failed to save main image.');
+                        if (!agro_shop_save_image($_FILES['image_main']['tmp_name'], $mainAbs, $mainExt)) {
+                            throw new RuntimeException('Failed to save main image. Check that assets/uploads/agro/ is writable on the server.');
                         }
                         $mainRel = 'assets/uploads/agro/items/' . $newId . '/' . $mainName;
 
@@ -211,7 +219,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             if (!empty($galleryExts[$i])) {
                                 $gName = 'gallery_' . $i . '.' . $galleryExts[$i];
                                 $gAbs = $itemDir . '/' . $gName;
-                                if (!agro_shop_save_image($_FILES['image_gallery_' . $i]['tmp_name'], $gAbs)) {
+                                if (!agro_shop_save_image($_FILES['image_gallery_' . $i]['tmp_name'], $gAbs, $galleryExts[$i])) {
                                     throw new RuntimeException('Failed to save gallery image ' . $i . '.');
                                 }
                                 $galleryPaths[$i - 1] = 'assets/uploads/agro/items/' . $newId . '/' . $gName;
@@ -290,7 +298,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             @unlink($oldAbs);
                         }
                     }
-                    if (agro_shop_save_image($_FILES['image_main']['tmp_name'], $mainAbs)) {
+                    if (agro_shop_save_image($_FILES['image_main']['tmp_name'], $mainAbs, $mainExt)) {
                         $mainRel = 'assets/uploads/agro/items/' . $uid . '/' . $mainName;
                     } else {
                         $error = 'Failed to replace main image.';
@@ -320,7 +328,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 @unlink($oldG);
                             }
                         }
-                        if (agro_shop_save_image($_FILES[$field]['tmp_name'], $gAbs)) {
+                        if (agro_shop_save_image($_FILES[$field]['tmp_name'], $gAbs, $gext)) {
                             $g[$idx] = 'assets/uploads/agro/items/' . $uid . '/' . $gName;
                         } else {
                             $error = 'Failed to save gallery image ' . $i . '.';
@@ -350,7 +358,7 @@ include __DIR__ . '/includes/header.php';
     <main class="admin-main">
         <div class="admin-heading">
             <h1>Agro Shop Items</h1>
-            <p>Add products shown on the public Agro page. Images are stored under <code>assets/uploads/agro/items/{id}/</code>.</p>
+            <p>Add products shown on the public Agro page. Images are stored under <code>assets/uploads/agro/items/{id}/</code>. Max upload size per photo: <strong><?php echo htmlspecialchars($uploadMaxLabel); ?></strong> (JPG, PNG, WEBP).</p>
         </div>
 
         <?php if ($success !== ''): ?>
@@ -389,7 +397,7 @@ include __DIR__ . '/includes/header.php';
                             <img src="<?php echo BASE_URL . '/' . ltrim($editRow['image_main'], '/'); ?>" alt="" style="max-height:120px;border-radius:8px;border:1px solid var(--border);">
                         </div>
                     <?php endif; ?>
-                    <input type="file" id="image_main" name="image_main" accept=".jpg,.jpeg,.png,.webp">
+                    <input type="file" id="image_main" name="image_main" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" data-max-bytes="<?php echo (int) nexora_upload_max_bytes(); ?>">
 
                     <?php for ($i = 1; $i <= 4; $i++): ?>
                         <?php $col = 'image_gallery_' . $i; ?>
@@ -399,7 +407,7 @@ include __DIR__ . '/includes/header.php';
                                 <img src="<?php echo BASE_URL . '/' . ltrim($editRow[$col], '/'); ?>" alt="" style="max-height:80px;border-radius:8px;border:1px solid var(--border);">
                             </div>
                         <?php endif; ?>
-                        <input type="file" id="image_gallery_<?php echo $i; ?>" name="image_gallery_<?php echo $i; ?>" accept=".jpg,.jpeg,.png,.webp">
+                        <input type="file" id="image_gallery_<?php echo $i; ?>" name="image_gallery_<?php echo $i; ?>" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" data-max-bytes="<?php echo (int) nexora_upload_max_bytes(); ?>">
                     <?php endfor; ?>
 
                     <button type="submit" name="update_item" value="1" class="btn-primary">Save changes</button>
@@ -426,11 +434,12 @@ include __DIR__ . '/includes/header.php';
                     <textarea id="description" name="description" maxlength="10000" placeholder="Shown on the public product page"></textarea>
 
                     <label for="image_main">Main photo</label>
-                    <input type="file" id="image_main" name="image_main" accept=".jpg,.jpeg,.png,.webp" required>
+                    <p class="admin-form-hint">Phone photos are OK; large images are resized automatically. If upload fails, try a smaller JPG under <?php echo htmlspecialchars($uploadMaxLabel); ?>.</p>
+                    <input type="file" id="image_main" name="image_main" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" required data-max-bytes="<?php echo (int) nexora_upload_max_bytes(); ?>">
 
                     <?php for ($i = 1; $i <= 4; $i++): ?>
                         <label for="image_gallery_<?php echo $i; ?>">Gallery photo <?php echo $i; ?> (optional)</label>
-                        <input type="file" id="image_gallery_<?php echo $i; ?>" name="image_gallery_<?php echo $i; ?>" accept=".jpg,.jpeg,.png,.webp">
+                        <input type="file" id="image_gallery_<?php echo $i; ?>" name="image_gallery_<?php echo $i; ?>" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" data-max-bytes="<?php echo (int) nexora_upload_max_bytes(); ?>">
                     <?php endfor; ?>
 
                     <button type="submit" name="add_item" value="1" class="btn-primary">Add product</button>
@@ -467,5 +476,23 @@ include __DIR__ . '/includes/header.php';
         </section>
     </main>
 </div>
+<script>
+(function () {
+    var maxHint = <?php echo json_encode($uploadMaxLabel); ?>;
+    document.querySelectorAll('input[type="file"][data-max-bytes]').forEach(function (input) {
+        input.addEventListener('change', function () {
+            var file = input.files && input.files[0];
+            if (!file) {
+                return;
+            }
+            var max = parseInt(input.getAttribute('data-max-bytes') || '0', 10);
+            if (max > 0 && file.size > max) {
+                alert('This photo is too large (' + Math.round(file.size / (1024 * 1024)) + ' MB). Maximum is ' + maxHint + '. Choose a smaller image or reduce camera quality in phone settings.');
+                input.value = '';
+            }
+        });
+    });
+})();
+</script>
 </body>
 </html>

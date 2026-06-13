@@ -8,10 +8,18 @@ include __DIR__ . '/includes/navbar.php';
 <main>
     <!-- Cinematic Hero Section -->
     <section class="hero-cinematic" id="homeHero">
+        <?php
+        $bannerVideoPath = __DIR__ . '/assets/videos/banner.mp4';
+        $bannerPosterPath = __DIR__ . '/assets/images/hero-poster.jpg';
+        $hasBannerVideo = is_file($bannerVideoPath);
+        $bannerPosterUrl = is_file($bannerPosterPath) ? nexora_url('assets/images/hero-poster.jpg') : '';
+        ?>
         <div class="hero-video-wrap" aria-hidden="true">
-            <video class="hero-video" autoplay loop muted playsinline>
-                <source src="<?php echo BASE_URL; ?>/assets/videos/banner.mp4" type="video/mp4">
+            <?php if ($hasBannerVideo): ?>
+            <video class="hero-video" autoplay loop muted playsinline preload="metadata"<?php echo $bannerPosterUrl !== '' ? ' poster="' . htmlspecialchars($bannerPosterUrl, ENT_QUOTES, 'UTF-8') . '"' : ''; ?>>
+                <source src="<?php echo nexora_url('assets/videos/banner.mp4'); ?>" type="video/mp4">
             </video>
+            <?php endif; ?>
             <div class="hero-overlay"></div>
         </div>
 

@@ -178,6 +178,15 @@ a {
     object-fit: cover;
 }
 
+.hero-cinematic.hero-video-unavailable .hero-video-wrap {
+    background: linear-gradient(135deg, #0b1220 0%, #1a365d 45%, #0c4a6e 100%);
+}
+
+.hero-cinematic.hero-video-unavailable .hero-video {
+    opacity: 0;
+    visibility: hidden;
+}
+
 .hero-overlay {
     background: rgba(0, 0, 0, 0.6);
 }

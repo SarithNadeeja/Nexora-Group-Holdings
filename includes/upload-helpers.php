@@ -1,0 +1,166 @@
+<?php
+/**
+ * Shared upload helpers for admin file handling.
+ */
+
+/**
+ * Human-readable message for PHP upload error codes (for non-technical users).
+ */
+function nexora_upload_error_message(int $code): string
+{
+    $maxUpload = ini_get('upload_max_filesize') ?: 'unknown';
+    $maxPost = ini_get('post_max_size') ?: 'unknown';
+
+    switch ($code) {
+        case UPLOAD_ERR_INI_SIZE:
+            return 'Photo is too large for the server (limit ' . $maxUpload . '). '
+                . 'On a phone, choose a smaller image, email it to yourself and save a compressed copy, or use a photo editor to reduce size before uploading.';
+        case UPLOAD_ERR_FORM_SIZE:
+            return 'Photo is too large (form limit). Maximum allowed is about ' . $maxUpload . '.';
+        case UPLOAD_ERR_PARTIAL:
+            return 'Upload was interrupted. Check your internet connection and try again.';
+        case UPLOAD_ERR_NO_TMP_DIR:
+            return 'Server upload folder is missing. Ask your host to enable PHP file uploads.';
+        case UPLOAD_ERR_CANT_WRITE:
+            return 'Server could not save the file. The uploads folder may need write permission (assets/uploads/).';
+        case UPLOAD_ERR_EXTENSION:
+            return 'Upload blocked by a server security rule. Contact your hosting provider.';
+        case UPLOAD_ERR_NO_FILE:
+            return 'No file was received. If you selected a photo on mobile, it may be too large (max ' . $maxUpload . ', total form ' . $maxPost . ').';
+        default:
+            return 'Image upload failed (server code ' . $code . '). Try a smaller JPG or PNG under ' . $maxUpload . '.';
+    }
+}
+
+/**
+ * Ensure a writable directory exists (recursive).
+ */
+function nexora_ensure_upload_dir(string $absolutePath, int $mode = 0775): bool
+{
+    if (is_dir($absolutePath)) {
+        return is_writable($absolutePath);
+    }
+    return @mkdir($absolutePath, $mode, true) && is_writable($absolutePath);
+}
+
+/**
+ * Save and optionally downscale an uploaded image (helps large phone camera photos).
+ */
+function nexora_save_uploaded_image(string $tmpPath, string $destPath, string $ext, int $maxWidth = 2000, int $jpegQuality = 85): bool
+{
+    if (!is_uploaded_file($tmpPath) && !is_file($tmpPath)) {
+        return false;
+    }
+
+    $ext = strtolower($ext);
+    if (!function_exists('imagecreatetruecolor')) {
+        return move_uploaded_file($tmpPath, $destPath);
+    }
+
+    $source = nexora_image_create_from_file($tmpPath, $ext);
+    if ($source === null) {
+        return move_uploaded_file($tmpPath, $destPath);
+    }
+
+    $width = imagesx($source);
+    $height = imagesy($source);
+    if ($width <= 0 || $height <= 0) {
+        imagedestroy($source);
+        return move_uploaded_file($tmpPath, $destPath);
+    }
+
+    $targetWidth = $width;
+    $targetHeight = $height;
+    if ($width > $maxWidth) {
+        $targetWidth = $maxWidth;
+        $targetHeight = (int) round($height * ($maxWidth / $width));
+    }
+
+    $canvas = imagecreatetruecolor($targetWidth, $targetHeight);
+    if ($canvas === false) {
+        imagedestroy($source);
+        return move_uploaded_file($tmpPath, $destPath);
+    }
+
+    if (in_array($ext, ['png', 'webp'], true)) {
+        imagealphablending($canvas, false);
+        imagesavealpha($canvas, true);
+    }
+
+    imagecopyresampled($canvas, $source, 0, 0, 0, 0, $targetWidth, $targetHeight, $width, $height);
+    imagedestroy($source);
+
+    $saved = nexora_image_save_to_file($canvas, $destPath, $ext, $jpegQuality);
+    imagedestroy($canvas);
+
+    if ($saved) {
+        @unlink($tmpPath);
+        return true;
+    }
+
+    return move_uploaded_file($tmpPath, $destPath);
+}
+
+/**
+ * @return resource|null
+ */
+function nexora_image_create_from_file(string $path, string $ext)
+{
+    switch ($ext) {
+        case 'jpg':
+        case 'jpeg':
+            return function_exists('imagecreatefromjpeg') ? @imagecreatefromjpeg($path) : null;
+        case 'png':
+            return function_exists('imagecreatefrompng') ? @imagecreatefrompng($path) : null;
+        case 'webp':
+            return function_exists('imagecreatefromwebp') ? @imagecreatefromwebp($path) : null;
+        default:
+            return null;
+    }
+}
+
+/**
+ * @param resource $image
+ */
+function nexora_image_save_to_file($image, string $path, string $ext, int $jpegQuality): bool
+{
+    switch ($ext) {
+        case 'jpg':
+        case 'jpeg':
+            return function_exists('imagejpeg') ? @imagejpeg($image, $path, $jpegQuality) : false;
+        case 'png':
+            return function_exists('imagepng') ? @imagepng($image, $path, 6) : false;
+        case 'webp':
+            return function_exists('imagewebp') ? @imagewebp($image, $path, $jpegQuality) : false;
+        default:
+            return false;
+    }
+}
+
+/**
+ * Max upload size in bytes from php.ini (best effort).
+ */
+function nexora_upload_max_bytes(): int
+{
+    return nexora_ini_size_to_bytes(ini_get('upload_max_filesize') ?: '2M');
+}
+
+function nexora_ini_size_to_bytes(string $value): int
+{
+    $value = trim($value);
+    if ($value === '') {
+        return 2 * 1024 * 1024;
+    }
+    $unit = strtolower(substr($value, -1));
+    $number = (float) $value;
+    switch ($unit) {
+        case 'g':
+            return (int) ($number * 1024 * 1024 * 1024);
+        case 'm':
+            return (int) ($number * 1024 * 1024);
+        case 'k':
+            return (int) ($number * 1024);
+        default:
+            return (int) $number;
+    }
+}

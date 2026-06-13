@@ -65,17 +65,20 @@ if (!defined('NEXORA_WHATSAPP_ORDER_NUMBER')) {
 }
 
 /**
- * Gmail settings for order status updates (sample placeholders).
- * Replace with real values later, or set environment variables:
- * NEXORA_GMAIL_FROM, NEXORA_GMAIL_APP_PASSWORD
+ * Gmail SMTP for order status emails.
+ * Credentials: includes/gmail.local.php (local) or env NEXORA_GMAIL_FROM / NEXORA_GMAIL_APP_PASSWORD.
  */
+$gmailLocalFile = __DIR__ . '/gmail.local.php';
+if (is_file($gmailLocalFile)) {
+    require_once $gmailLocalFile;
+}
 if (!defined('NEXORA_GMAIL_FROM')) {
     $gmailFrom = getenv('NEXORA_GMAIL_FROM');
-    define('NEXORA_GMAIL_FROM', $gmailFrom !== false ? trim($gmailFrom) : 'your-gmail@gmail.com');
+    define('NEXORA_GMAIL_FROM', $gmailFrom !== false ? trim($gmailFrom) : '');
 }
 if (!defined('NEXORA_GMAIL_APP_PASSWORD')) {
     $gmailPass = getenv('NEXORA_GMAIL_APP_PASSWORD');
-    define('NEXORA_GMAIL_APP_PASSWORD', $gmailPass !== false ? trim($gmailPass) : 'sample-app-password-1234');
+    define('NEXORA_GMAIL_APP_PASSWORD', $gmailPass !== false ? trim($gmailPass) : '');
 }
 
 /**
