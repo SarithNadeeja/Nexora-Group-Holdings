@@ -115,7 +115,7 @@ include __DIR__ . '/includes/navbar.php';
         <div class="container about-cta-inner reveal-on-scroll">
             <h2>Let&rsquo;s Work Together</h2>
             <p>Partner with Nexora to bring your ideas to life.</p>
-            <a class="btn-primary about-cta-btn" href="<?php echo BASE_URL; ?>/contact.php">Contact Us</a>
+            <a class="btn-primary about-cta-btn" href="<?php echo htmlspecialchars(nexora_contact_href()); ?>" target="_blank" rel="noopener noreferrer">Contact Us</a>
         </div>
     </section>
 </main>

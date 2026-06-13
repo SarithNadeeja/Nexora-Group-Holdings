@@ -150,7 +150,7 @@ include dirname(__DIR__) . '/includes/navbar.php';
                     <?php else: ?>
                         <div class="agro-wa-placeholder agro-wa-placeholder-muted">
                             <strong>Currently unavailable</strong>
-                            <p>This item is out of stock. Browse similar products below or <a href="<?php echo BASE_URL; ?>/contact.php">contact us</a> for restock updates.</p>
+                            <p>This item is out of stock. Browse similar products below or <a href="<?php echo htmlspecialchars(nexora_contact_href('agro')); ?>" target="_blank" rel="noopener noreferrer">contact us</a> for restock updates.</p>
                         </div>
                     <?php endif; ?>
 
@@ -163,7 +163,7 @@ include dirname(__DIR__) . '/includes/navbar.php';
                 <?php if ($description !== ''): ?>
                     <div class="agro-pdp-description"><?php echo nl2br(htmlspecialchars($description, ENT_QUOTES, 'UTF-8')); ?></div>
                 <?php else: ?>
-                    <p class="agro-pdp-description-empty">A detailed description will be added soon. Questions? <a href="<?php echo BASE_URL; ?>/contact.php">Get in touch</a> and we will help right away.</p>
+                    <p class="agro-pdp-description-empty">A detailed description will be added soon. Questions? <a href="<?php echo htmlspecialchars(nexora_contact_href('agro')); ?>" target="_blank" rel="noopener noreferrer">Get in touch</a> and we will help right away.</p>
                 <?php endif; ?>
             </div>
         </div>

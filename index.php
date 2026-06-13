@@ -216,7 +216,7 @@ include __DIR__ . '/includes/navbar.php';
             <div class="cta-content reveal-on-scroll" style="--delay: 0.05s;">
                 <h2>Ready to Get Started with Nexora?</h2>
                 <p>Let&rsquo;s bring your ideas to life with our digital, printing, and agro solutions.</p>
-                <a class="btn-cta" href="<?php echo BASE_URL; ?>/contact.php">Contact Us</a>
+                <a class="btn-cta" href="<?php echo htmlspecialchars(nexora_contact_href()); ?>" target="_blank" rel="noopener noreferrer">Contact Us</a>
             </div>
         </div>
     </section>

@@ -40,7 +40,7 @@ include dirname(__DIR__) . '/includes/navbar.php';
                 <h1>Nexora Agro</h1>
                 <h2>Fresh Agricultural Products &amp; Growing Essentials</h2>
                 <p>We provide high-quality agricultural products including plants, seeds, and essential growing materials for both home and commercial use.</p>
-                <a class="agro-btn agro-btn-primary" href="<?php echo BASE_URL; ?>/contact.php">Get in Touch</a>
+                <a class="agro-btn agro-btn-primary" href="<?php echo htmlspecialchars(nexora_contact_href('agro')); ?>" target="_blank" rel="noopener noreferrer">Get in Touch</a>
             </div>
             <div class="digital-page-hero-media">
                 <?php
@@ -63,7 +63,7 @@ include dirname(__DIR__) . '/includes/navbar.php';
                 <p>Browse our catalog — order by contacting our team for availability and delivery.</p>
             </div>
             <?php if (count($agroShopItems) === 0): ?>
-                <p class="agro-shop-empty reveal-on-scroll">Products will appear here once they are added in the admin panel. <a href="<?php echo BASE_URL; ?>/contact.php">Contact us</a> for current availability.</p>
+                <p class="agro-shop-empty reveal-on-scroll">Products will appear here once they are added in the admin panel. <a href="<?php echo htmlspecialchars(nexora_contact_href('agro')); ?>" target="_blank" rel="noopener noreferrer">Contact us</a> for current availability.</p>
             <?php else: ?>
                 <div class="agro-products-grid">
                     <?php foreach ($agroShopItems as $i => $prod): ?>
@@ -201,7 +201,7 @@ include dirname(__DIR__) . '/includes/navbar.php';
         <div class="container agro-cta-inner reveal-on-scroll">
             <h2>Need Bulk Agro Supplies?</h2>
             <p>Contact us for large-scale orders and custom requirements.</p>
-            <a class="agro-btn agro-btn-primary agro-cta-btn" href="<?php echo BASE_URL; ?>/contact.php">Contact Us</a>
+            <a class="agro-btn agro-btn-primary agro-cta-btn" href="<?php echo htmlspecialchars(nexora_contact_href('agro')); ?>" target="_blank" rel="noopener noreferrer">Contact Us</a>
         </div>
     </section>
 </main>

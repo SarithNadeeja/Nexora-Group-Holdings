@@ -122,3 +122,59 @@ function nexora_whatsapp_agro_order_url(string $productName, int $productId): ?s
     $msg = "Hello Nexora Agro,\n\nI'd like to order or ask about:\n" . $productName . "\n(Ref: product #" . $productId . ")\n\nThank you.";
     return 'https://wa.me/' . $num . '?text=' . rawurlencode($msg);
 }
+
+/**
+ * Digits for general "Contact Us" WhatsApp (env first, then division phone, then any division).
+ */
+function nexora_whatsapp_contact_digits(?string $division = null): string
+{
+    $num = preg_replace('/\D+/', '', (string) NEXORA_WHATSAPP_ORDER_NUMBER);
+    if ($num !== '') {
+        return $num;
+    }
+    require_once __DIR__ . '/division_contacts.php';
+    $contacts = nexora_division_contacts_all();
+    if ($division !== null && isset($contacts[$division])) {
+        $digits = preg_replace('/\D+/', '', (string) ($contacts[$division]['phone'] ?? ''));
+        if ($digits !== '') {
+            return $digits;
+        }
+    }
+    foreach (['digital', 'agro', 'printing'] as $div) {
+        $digits = preg_replace('/\D+/', '', (string) ($contacts[$div]['phone'] ?? ''));
+        if ($digits !== '') {
+            return $digits;
+        }
+    }
+    return '';
+}
+
+/**
+ * @return string|null wa.me URL for Contact Us buttons, or null if not configured
+ */
+function nexora_whatsapp_contact_url(?string $division = null, ?string $message = null): ?string
+{
+    $num = nexora_whatsapp_contact_digits($division);
+    if ($num === '') {
+        return null;
+    }
+    if ($message === null) {
+        $labels = [
+            'digital' => 'Nexora Digital',
+            'agro' => 'Nexora Agro',
+            'printing' => 'Nexora Printing',
+        ];
+        $name = ($division !== null && isset($labels[$division])) ? $labels[$division] : 'Nexora Group Holdings';
+        $message = "Hello {$name},\n\nI'd like to get in touch.\n\nThank you.";
+    }
+    return 'https://wa.me/' . $num . '?text=' . rawurlencode($message);
+}
+
+/**
+ * href for Contact Us CTAs: WhatsApp when configured, otherwise contact page.
+ */
+function nexora_contact_href(?string $division = null, ?string $message = null): string
+{
+    $wa = nexora_whatsapp_contact_url($division, $message);
+    return $wa ?? nexora_url('contact.php');
+}

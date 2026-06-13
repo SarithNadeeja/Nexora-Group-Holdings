@@ -131,37 +131,37 @@ include dirname(__DIR__) . '/includes/navbar.php';
                     <div class="digital-service-icon"></div>
                     <h3>Photography</h3>
                     <p>Professional visual storytelling for products, teams, and campaigns.</p>
-                    <a class="service-contact-btn" href="<?php echo BASE_URL; ?>/contact.php">Contact Us</a>
+                    <a class="service-contact-btn" href="<?php echo htmlspecialchars(nexora_contact_href('digital')); ?>" target="_blank" rel="noopener noreferrer">Contact Us</a>
                 </article>
                 <article class="digital-service-card reveal-on-scroll" style="--delay: 0.08s;">
                     <div class="digital-service-icon"></div>
                     <h3>Videography</h3>
                     <p>High-quality video coverage tailored for modern business communication.</p>
-                    <a class="service-contact-btn" href="<?php echo BASE_URL; ?>/contact.php">Contact Us</a>
+                    <a class="service-contact-btn" href="<?php echo htmlspecialchars(nexora_contact_href('digital')); ?>" target="_blank" rel="noopener noreferrer">Contact Us</a>
                 </article>
                 <article class="digital-service-card reveal-on-scroll" style="--delay: 0.16s;">
                     <div class="digital-service-icon"></div>
                     <h3>Video Creation</h3>
                     <p>Creative edits and branded content that connect with your audience.</p>
-                    <a class="service-contact-btn" href="<?php echo BASE_URL; ?>/contact.php">Contact Us</a>
+                    <a class="service-contact-btn" href="<?php echo htmlspecialchars(nexora_contact_href('digital')); ?>" target="_blank" rel="noopener noreferrer">Contact Us</a>
                 </article>
                 <article class="digital-service-card reveal-on-scroll" style="--delay: 0.24s;">
                     <div class="digital-service-icon"></div>
                     <h3>Graphic Design</h3>
                     <p>Clean and impactful designs for digital and print marketing assets.</p>
-                    <a class="service-contact-btn" href="<?php echo BASE_URL; ?>/contact.php">Contact Us</a>
+                    <a class="service-contact-btn" href="<?php echo htmlspecialchars(nexora_contact_href('digital')); ?>" target="_blank" rel="noopener noreferrer">Contact Us</a>
                 </article>
                 <article class="digital-service-card reveal-on-scroll" style="--delay: 0.32s;">
                     <div class="digital-service-icon"></div>
                     <h3>Social Media Management</h3>
                     <p>Structured content planning, posting, and growth-focused engagement.</p>
-                    <a class="service-contact-btn" href="<?php echo BASE_URL; ?>/contact.php">Contact Us</a>
+                    <a class="service-contact-btn" href="<?php echo htmlspecialchars(nexora_contact_href('digital')); ?>" target="_blank" rel="noopener noreferrer">Contact Us</a>
                 </article>
                 <article class="digital-service-card reveal-on-scroll" style="--delay: 0.4s;">
                     <div class="digital-service-icon"></div>
                     <h3>Brand Promotion</h3>
                     <p>Strategic campaigns that increase visibility and strengthen trust.</p>
-                    <a class="service-contact-btn" href="<?php echo BASE_URL; ?>/contact.php">Contact Us</a>
+                    <a class="service-contact-btn" href="<?php echo htmlspecialchars(nexora_contact_href('digital')); ?>" target="_blank" rel="noopener noreferrer">Contact Us</a>
                 </article>
             </div>
         </div>
@@ -217,7 +217,7 @@ include dirname(__DIR__) . '/includes/navbar.php';
         <div class="container cta-inner">
             <div class="cta-content reveal-on-scroll">
                 <h2>Let&rsquo;s Build Your Brand Together</h2>
-                <a class="btn-cta" href="<?php echo BASE_URL; ?>/contact.php">Contact Us</a>
+                <a class="btn-cta" href="<?php echo htmlspecialchars(nexora_contact_href('digital')); ?>" target="_blank" rel="noopener noreferrer">Contact Us</a>
             </div>
         </div>
     </section>
