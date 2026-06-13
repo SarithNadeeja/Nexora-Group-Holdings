@@ -11,10 +11,16 @@ $adminPageTitle = 'Agro Shop Items';
 $success = '';
 $error = '';
 
-$root = dirname(__DIR__);
-$agroItemsUploadRoot = $root . '/assets/uploads/agro/items';
-if (!nexora_ensure_upload_dir($agroItemsUploadRoot)) {
-    $error = 'Upload folder is not writable. On the server, set permissions on assets/uploads/agro/ (chmod 775 or 777).';
+$root = nexora_project_root();
+$agroUploadBase = nexora_fs_path($root, 'assets', 'uploads', 'agro');
+$agroItemsUploadRoot = nexora_fs_path($root, 'assets', 'uploads', 'agro', 'items');
+$uploadDirError = nexora_ensure_upload_dirs([
+    nexora_fs_path($root, 'assets', 'uploads'),
+    $agroUploadBase,
+    $agroItemsUploadRoot,
+]);
+if ($uploadDirError !== null) {
+    $error = $uploadDirError . ' Set owner to the web server user (e.g. www-data) and chmod 775.';
 }
 
 $uploadMaxLabel = ini_get('upload_max_filesize') ?: '2M';
@@ -142,15 +148,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         }
                         $newId = (int) $idRow['id'];
 
-                        $itemDir = $root . '/assets/uploads/agro/items/' . $newId;
-                        if (!is_dir($itemDir) && !mkdir($itemDir, 0775, true)) {
-                            throw new RuntimeException('Could not create upload folder.');
+                        $itemDir = nexora_fs_path($root, 'assets', 'uploads', 'agro', 'items', (string) $newId);
+                        if (!nexora_ensure_upload_dir($itemDir)) {
+                            throw new RuntimeException('Could not create upload folder: ' . $itemDir);
                         }
 
                         $mainName = 'main.' . $mainExt;
                         $mainAbs = $itemDir . '/' . $mainName;
                         if (!agro_shop_save_image($_FILES['image_main']['tmp_name'], $mainAbs, $mainExt)) {
-                            throw new RuntimeException('Failed to save main image. Check that assets/uploads/agro/ is writable on the server.');
+                            throw new RuntimeException('Failed to save main image to: ' . $mainAbs);
                         }
                         $mainRel = 'assets/uploads/agro/items/' . $newId . '/' . $mainName;
 
@@ -210,9 +216,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'Invalid stock status.';
         } else {
             $error = '';
-            $itemDir = $root . '/assets/uploads/agro/items/' . $uid;
-            if (!is_dir($itemDir)) {
-                mkdir($itemDir, 0775, true);
+            $itemDir = nexora_fs_path($root, 'assets', 'uploads', 'agro', 'items', (string) $uid);
+            if (!nexora_ensure_upload_dir($itemDir)) {
+                $error = 'Upload folder is not writable: ' . $itemDir;
             }
 
             $mainRel = $row['image_main'];

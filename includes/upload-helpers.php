@@ -33,14 +33,88 @@ function nexora_upload_error_message(int $code): string
 }
 
 /**
+ * Normalize and resolve an absolute filesystem path under the project.
+ */
+function nexora_fs_path(string $baseDir, string ...$parts): string
+{
+    $path = str_replace('\\', '/', $baseDir);
+    $resolved = realpath($path);
+    if ($resolved !== false) {
+        $path = str_replace('\\', '/', $resolved);
+    } else {
+        $path = rtrim($path, '/');
+    }
+
+    foreach ($parts as $part) {
+        $part = trim(str_replace('\\', '/', $part), '/');
+        if ($part !== '') {
+            $path .= '/' . $part;
+        }
+    }
+
+    return $path;
+}
+
+/**
+ * Project root directory (parent of includes/, admin/, assets/, etc.).
+ */
+function nexora_project_root(): string
+{
+    return nexora_fs_path(dirname(__DIR__));
+}
+
+/**
+ * True if PHP can write a file into this directory (more reliable than is_writable() alone).
+ */
+function nexora_dir_is_writable(string $dir): bool
+{
+    if (!is_dir($dir)) {
+        return false;
+    }
+    if (is_writable($dir)) {
+        return true;
+    }
+    $probe = $dir . '/.nexora_write_' . bin2hex(random_bytes(4));
+    $ok = @file_put_contents($probe, 'ok') !== false;
+    if ($ok) {
+        @unlink($probe);
+    }
+    return $ok;
+}
+
+/**
  * Ensure a writable directory exists (recursive).
  */
 function nexora_ensure_upload_dir(string $absolutePath, int $mode = 0775): bool
 {
-    if (is_dir($absolutePath)) {
-        return is_writable($absolutePath);
+    $absolutePath = str_replace('\\', '/', $absolutePath);
+
+    if (!is_dir($absolutePath)) {
+        @mkdir($absolutePath, $mode, true);
+        if (!is_dir($absolutePath)) {
+            return false;
+        }
+        @chmod($absolutePath, $mode);
     }
-    return @mkdir($absolutePath, $mode, true) && is_writable($absolutePath);
+
+    return nexora_dir_is_writable($absolutePath);
+}
+
+/**
+ * Ensure several upload directories exist. Returns an error message or null on success.
+ */
+function nexora_ensure_upload_dirs(array $absolutePaths, int $mode = 0775): ?string
+{
+    foreach ($absolutePaths as $path) {
+        $path = str_replace('\\', '/', $path);
+        if (!nexora_ensure_upload_dir($path, $mode)) {
+            if (is_dir($path)) {
+                return 'Upload folder exists but is not writable by PHP: ' . $path;
+            }
+            return 'Upload folder could not be created: ' . $path;
+        }
+    }
+    return null;
 }
 
 /**
@@ -48,7 +122,7 @@ function nexora_ensure_upload_dir(string $absolutePath, int $mode = 0775): bool
  */
 function nexora_bootstrap_upload_dirs(string $root): void
 {
-    $base = str_replace('\\', '/', $root) . '/assets/uploads';
+    $base = nexora_fs_path($root, 'assets', 'uploads');
     $dirs = [
         $base,
         $base . '/images',
