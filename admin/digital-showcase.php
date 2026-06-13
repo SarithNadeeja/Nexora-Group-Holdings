@@ -96,15 +96,15 @@ $images = $pdo->query('SELECT id, image_path, created_at FROM digital_featured_i
             <?php if (count($images) === 0): ?>
                 <p style="color:#6b7280;">No showcase images uploaded yet.</p>
             <?php else: ?>
-                <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;">
+                <div class="admin-media-grid">
                     <?php foreach ($images as $image): ?>
-                        <article style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;background:#fff;">
-                            <img src="<?php echo BASE_URL . '/' . ltrim($image['image_path'], '/'); ?>" alt="Showcase image" style="width:100%;height:140px;object-fit:cover;display:block;">
-                            <div style="padding:10px;">
+                        <article class="admin-media-card">
+                            <img src="<?php echo BASE_URL . '/' . ltrim($image['image_path'], '/'); ?>" alt="Showcase image">
+                            <div class="admin-media-card-body">
                                 <small style="color:#6b7280;display:block;margin-bottom:8px;"><?php echo htmlspecialchars($image['created_at']); ?></small>
                                 <form method="post" onsubmit="return confirm('Remove this image?');">
                                     <input type="hidden" name="delete_id" value="<?php echo (int) $image['id']; ?>">
-                                    <button type="submit" class="btn-primary" style="background:#dc2626;">Remove</button>
+                                    <button type="submit" class="btn-danger">Remove</button>
                                 </form>
                             </div>
                         </article>

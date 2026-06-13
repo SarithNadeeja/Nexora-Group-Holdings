@@ -134,7 +134,7 @@ include __DIR__ . '/includes/header.php';
                                     </td>
                                     <td>
                                         <div style="margin-bottom:8px;font-weight:600;"><?php echo htmlspecialchars($statusLabel); ?></div>
-                                        <form method="post" class="admin-form" style="gap:8px;min-width:170px;">
+                                        <form method="post" class="admin-form admin-form-compact">
                                             <input type="hidden" name="order_id" value="<?php echo (int) $o['id']; ?>">
                                             <select name="status" required style="width:100%;padding:10px 11px;border-radius:10px;border:1px solid var(--border);">
                                                 <option value="processing" <?php echo $status === 'processing' ? 'selected' : ''; ?>>Order processing</option>

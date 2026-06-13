@@ -391,20 +391,20 @@ include __DIR__ . '/includes/header.php';
             <?php if (count($items) === 0): ?>
                 <p style="color:var(--muted);">No products yet. Add one above.</p>
             <?php else: ?>
-                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;">
+                <div class="admin-product-grid">
                     <?php foreach ($items as $it): ?>
-                        <article style="border:1px solid var(--border);border-radius:12px;overflow:hidden;background:#fff;">
+                        <article class="admin-product-card">
                             <?php if (!empty($it['image_main'])): ?>
-                                <img src="<?php echo BASE_URL . '/' . ltrim($it['image_main'], '/'); ?>" alt="" style="width:100%;height:140px;object-fit:cover;">
+                                <img src="<?php echo BASE_URL . '/' . ltrim($it['image_main'], '/'); ?>" alt="">
                             <?php endif; ?>
-                            <div style="padding:12px;">
+                            <div class="admin-product-card-body">
                                 <strong style="display:block;margin-bottom:6px;"><?php echo htmlspecialchars($it['name']); ?></strong>
                                 <small style="color:var(--muted);display:block;margin-bottom:6px;"><?php echo htmlspecialchars($it['stock_status']); ?> &middot; LKR <?php echo htmlspecialchars(number_format((float) $it['price'], 2)); ?></small>
-                                <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                                    <a href="agro-shop.php?edit=<?php echo (int) $it['id']; ?>" class="btn-primary" style="display:inline-block;text-align:center;padding:8px 12px;font-size:0.9rem;">Edit</a>
+                                <div class="admin-card-actions">
+                                    <a href="agro-shop.php?edit=<?php echo (int) $it['id']; ?>" class="btn-primary" style="padding:8px 12px;font-size:0.9rem;">Edit</a>
                                     <form method="post" style="display:inline;" onsubmit="return confirm('Delete this product and all its images?');">
                                         <input type="hidden" name="delete_id" value="<?php echo (int) $it['id']; ?>">
-                                        <button type="submit" class="btn-primary" style="background:#dc2626;padding:8px 12px;font-size:0.9rem;">Delete</button>
+                                        <button type="submit" class="btn-danger" style="padding:8px 12px;font-size:0.9rem;">Delete</button>
                                     </form>
                                 </div>
                             </div>
