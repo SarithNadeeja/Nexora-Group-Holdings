@@ -44,6 +44,41 @@ function nexora_ensure_upload_dir(string $absolutePath, int $mode = 0775): bool
 }
 
 /**
+ * Create upload folder structure on first run (not stored in git — server-only data).
+ */
+function nexora_bootstrap_upload_dirs(string $root): void
+{
+    $base = str_replace('\\', '/', $root) . '/assets/uploads';
+    $dirs = [
+        $base,
+        $base . '/images',
+        $base . '/pdfs',
+        $base . '/digital-featured',
+        $base . '/agro',
+        $base . '/agro/items',
+    ];
+
+    foreach ($dirs as $dir) {
+        nexora_ensure_upload_dir($dir);
+    }
+
+    $pdfHtaccess = $base . '/pdfs/.htaccess';
+    if (!is_file($pdfHtaccess)) {
+        $rules = <<<'HTACCESS'
+# PDFs are served only via pages/pdf-view.php (inline preview). Prevents direct URL downloads from this folder.
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Order Deny,Allow
+    Deny from all
+</IfModule>
+HTACCESS;
+        @file_put_contents($pdfHtaccess, $rules);
+    }
+}
+
+/**
  * Save and optionally downscale an uploaded image (helps large phone camera photos).
  */
 function nexora_save_uploaded_image(string $tmpPath, string $destPath, string $ext, int $maxWidth = 2000, int $jpegQuality = 85): bool

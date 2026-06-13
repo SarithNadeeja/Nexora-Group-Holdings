@@ -8,6 +8,9 @@
  * Requires PHP extension: pdo_pgsql
  */
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/upload-helpers.php';
+
+nexora_bootstrap_upload_dirs(dirname(__DIR__));
 
 /**
  * @return PDO|null Returns null if extension missing or connection fails.

@@ -2,11 +2,13 @@
 require_once __DIR__ . '/includes/auth.php';
 requireAdminAuth();
 require_once __DIR__ . '/includes/db.php';
+require_once dirname(__DIR__) . '/includes/upload-cleanup.php';
 
 $adminPageTitle = 'Digital Showcase Images';
 $success = '';
 $error = '';
 $maxImages = 10;
+$root = dirname(__DIR__);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['delete_id'])) {
@@ -17,10 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($row) {
             $pdo->prepare('DELETE FROM digital_featured_images WHERE id = ?')->execute([$deleteId]);
-            $absolute = dirname(__DIR__) . '/' . ltrim($row['image_path'], '/');
-            if (is_file($absolute)) {
-                @unlink($absolute);
-            }
+            nexora_delete_showcase_image_file($root, $row['image_path'] ?? '');
             $success = 'Image removed successfully.';
         } else {
             $error = 'Image not found.';

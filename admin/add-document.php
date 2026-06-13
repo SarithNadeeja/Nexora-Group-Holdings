@@ -2,72 +2,89 @@
 require_once __DIR__ . '/includes/auth.php';
 requireAdminAuth();
 require_once __DIR__ . '/includes/db.php';
+require_once dirname(__DIR__) . '/includes/upload-cleanup.php';
 
 $adminPageTitle = 'Add Document';
 $success = '';
 $error = '';
+$root = dirname(__DIR__);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name = isset($_POST['name']) ? trim($_POST['name']) : '';
-    $pages = isset($_POST['pages']) ? (int) $_POST['pages'] : 0;
-    $price = isset($_POST['price']) ? (float) $_POST['price'] : 0;
+    if (isset($_POST['delete_id'])) {
+        $deleteId = (int) $_POST['delete_id'];
+        $stmt = $pdo->prepare('SELECT id, name, image_path, pdf_path FROM print_documents WHERE id = ?');
+        $stmt->execute([$deleteId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($name === '' || $pages <= 0 || $price < 0) {
-        $error = 'Please provide valid name, pages, and price.';
-    } elseif (!isset($_FILES['image_file']) || !isset($_FILES['pdf_file'])) {
-        $error = 'Please upload both image and PDF files.';
-    } else {
-        $imageFile = $_FILES['image_file'];
-        $pdfFile = $_FILES['pdf_file'];
-
-        if ($imageFile['error'] !== UPLOAD_ERR_OK || $pdfFile['error'] !== UPLOAD_ERR_OK) {
-            $error = 'File upload failed. Please try again.';
+        if ($row) {
+            nexora_delete_print_document_files($root, $row);
+            $pdo->prepare('DELETE FROM print_documents WHERE id = ?')->execute([$deleteId]);
+            $success = 'Document and its files were removed.';
         } else {
-            $baseUploadDir = dirname(__DIR__) . '/assets/uploads';
-            $imageDir = $baseUploadDir . '/images';
-            $pdfDir = $baseUploadDir . '/pdfs';
+            $error = 'Document not found.';
+        }
+    } else {
+        $name = isset($_POST['name']) ? trim($_POST['name']) : '';
+        $pages = isset($_POST['pages']) ? (int) $_POST['pages'] : 0;
+        $price = isset($_POST['price']) ? (float) $_POST['price'] : 0;
 
-            if (!is_dir($imageDir)) {
-                mkdir($imageDir, 0775, true);
-            }
-            if (!is_dir($pdfDir)) {
-                mkdir($pdfDir, 0775, true);
-            }
+        if ($name === '' || $pages <= 0 || $price < 0) {
+            $error = 'Please provide valid name, pages, and price.';
+        } elseif (!isset($_FILES['image_file']) || !isset($_FILES['pdf_file'])) {
+            $error = 'Please upload both image and PDF files.';
+        } else {
+            $imageFile = $_FILES['image_file'];
+            $pdfFile = $_FILES['pdf_file'];
 
-            $imageExt = strtolower(pathinfo($imageFile['name'], PATHINFO_EXTENSION));
-            $pdfExt = strtolower(pathinfo($pdfFile['name'], PATHINFO_EXTENSION));
-
-            $allowedImage = ['jpg', 'jpeg', 'png', 'webp'];
-            if (!in_array($imageExt, $allowedImage, true)) {
-                $error = 'Image must be JPG, JPEG, PNG, or WEBP.';
-            } elseif ($pdfExt !== 'pdf') {
-                $error = 'PDF file must have .pdf extension.';
+            if ($imageFile['error'] !== UPLOAD_ERR_OK || $pdfFile['error'] !== UPLOAD_ERR_OK) {
+                $error = 'File upload failed. Please try again.';
             } else {
-                $safeBase = preg_replace('/[^a-zA-Z0-9_-]/', '-', strtolower($name));
-                $unique = date('YmdHis') . '-' . bin2hex(random_bytes(4));
+                $baseUploadDir = $root . '/assets/uploads';
+                $imageDir = $baseUploadDir . '/images';
+                $pdfDir = $baseUploadDir . '/pdfs';
 
-                $imageName = $safeBase . '-' . $unique . '.' . $imageExt;
-                $pdfName = $safeBase . '-' . $unique . '.pdf';
+                if (!is_dir($imageDir)) {
+                    mkdir($imageDir, 0775, true);
+                }
+                if (!is_dir($pdfDir)) {
+                    mkdir($pdfDir, 0775, true);
+                }
 
-                $imageTarget = $imageDir . '/' . $imageName;
-                $pdfTarget = $pdfDir . '/' . $pdfName;
+                $imageExt = strtolower(pathinfo($imageFile['name'], PATHINFO_EXTENSION));
+                $pdfExt = strtolower(pathinfo($pdfFile['name'], PATHINFO_EXTENSION));
 
-                if (!move_uploaded_file($imageFile['tmp_name'], $imageTarget)) {
-                    $error = 'Failed to save image file.';
-                } elseif (!move_uploaded_file($pdfFile['tmp_name'], $pdfTarget)) {
-                    $error = 'Failed to save PDF file.';
+                $allowedImage = ['jpg', 'jpeg', 'png', 'webp'];
+                if (!in_array($imageExt, $allowedImage, true)) {
+                    $error = 'Image must be JPG, JPEG, PNG, or WEBP.';
+                } elseif ($pdfExt !== 'pdf') {
+                    $error = 'PDF file must have .pdf extension.';
                 } else {
-                    $imagePath = 'assets/uploads/images/' . $imageName;
-                    $pdfPath = 'assets/uploads/pdfs/' . $pdfName;
+                    $safeBase = preg_replace('/[^a-zA-Z0-9_-]/', '-', strtolower($name));
+                    $unique = date('YmdHis') . '-' . bin2hex(random_bytes(4));
 
-                    $stmt = $pdo->prepare(
-                        'INSERT INTO print_documents (name, pages, image_path, pdf_path, price) VALUES (?, ?, ?, ?, ?)'
-                    );
+                    $imageName = $safeBase . '-' . $unique . '.' . $imageExt;
+                    $pdfName = $safeBase . '-' . $unique . '.pdf';
 
-                    if ($stmt->execute([$name, $pages, $imagePath, $pdfPath, $price])) {
-                        $success = 'Document added successfully.';
+                    $imageTarget = $imageDir . '/' . $imageName;
+                    $pdfTarget = $pdfDir . '/' . $pdfName;
+
+                    if (!move_uploaded_file($imageFile['tmp_name'], $imageTarget)) {
+                        $error = 'Failed to save image file.';
+                    } elseif (!move_uploaded_file($pdfFile['tmp_name'], $pdfTarget)) {
+                        $error = 'Failed to save PDF file.';
                     } else {
-                        $error = 'Database insert failed.';
+                        $imagePath = 'assets/uploads/images/' . $imageName;
+                        $pdfPath = 'assets/uploads/pdfs/' . $pdfName;
+
+                        $stmt = $pdo->prepare(
+                            'INSERT INTO print_documents (name, pages, image_path, pdf_path, price) VALUES (?, ?, ?, ?, ?)'
+                        );
+
+                        if ($stmt->execute([$name, $pages, $imagePath, $pdfPath, $price])) {
+                            $success = 'Document added successfully.';
+                        } else {
+                            $error = 'Database insert failed.';
+                        }
                     }
                 }
             }
@@ -83,8 +100,6 @@ try {
 } catch (Throwable $e) {
     $printDocuments = [];
 }
-
-$root = dirname(__DIR__);
 
 include __DIR__ . '/includes/header.php';
 ?>
@@ -140,6 +155,7 @@ include __DIR__ . '/includes/header.php';
                                 <th style="width:110px;">Price (LKR)</th>
                                 <th style="width:160px;">Added</th>
                                 <th style="width:100px;">Preview</th>
+                                <th style="width:100px;">Remove</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -165,6 +181,12 @@ include __DIR__ . '/includes/header.php';
                                     <td style="font-size:0.9rem;color:var(--muted);"><?php echo htmlspecialchars((string) $doc['created_at']); ?></td>
                                     <td>
                                         <a href="<?php echo htmlspecialchars($previewUrl); ?>" target="_blank" rel="noopener noreferrer" style="color:var(--primary);font-weight:600;">PDF</a>
+                                    </td>
+                                    <td>
+                                        <form method="post" onsubmit="return confirm('Delete this document and remove its image and PDF files?');">
+                                            <input type="hidden" name="delete_id" value="<?php echo (int) $doc['id']; ?>">
+                                            <button type="submit" class="btn-danger">Delete</button>
+                                        </form>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

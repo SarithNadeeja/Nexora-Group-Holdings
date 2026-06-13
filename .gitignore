@@ -1,1 +1,9 @@
+# Local secrets
 includes/gmail.local.php
+
+# User uploads — server-only; never overwrite on git pull/push
+assets/uploads/
+
+# Optional local media (not required in repo)
+assets/videos/banner.mp4
+assets/images/hero-poster.jpg

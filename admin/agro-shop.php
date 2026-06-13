@@ -5,6 +5,7 @@ require_once __DIR__ . '/includes/db.php';
 
 require_once dirname(__DIR__) . '/includes/config.php';
 require_once dirname(__DIR__) . '/includes/upload-helpers.php';
+require_once dirname(__DIR__) . '/includes/upload-cleanup.php';
 
 $adminPageTitle = 'Agro Shop Items';
 $success = '';
@@ -47,71 +48,9 @@ function agro_shop_validate_image(array $file, array $allowedExt, bool $required
     return $ext;
 }
 
-function agro_shop_unlink_stored_path(string $root, ?string $relative): void
-{
-    if ($relative === null || $relative === '') {
-        return;
-    }
-    $abs = $root . DIRECTORY_SEPARATOR . str_replace(['/', '\\'], DIRECTORY_SEPARATOR, ltrim($relative, '/\\'));
-    $real = realpath($abs);
-    $agroUploadRoot = realpath($root . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'agro');
-    if ($real === false || $agroUploadRoot === false || !is_file($real)) {
-        return;
-    }
-    if (strpos($real, $agroUploadRoot) !== 0) {
-        return;
-    }
-    @unlink($real);
-}
-
-/**
- * Recursively remove assets/uploads/agro/items/{id} (all files and the folder).
- */
-function agro_shop_remove_item_directory(string $root, int $id): void
-{
-    $dir = $root . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'agro' . DIRECTORY_SEPARATOR . 'items' . DIRECTORY_SEPARATOR . $id;
-    if (!is_dir($dir)) {
-        return;
-    }
-
-    try {
-        $iterator = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS),
-            RecursiveIteratorIterator::CHILD_FIRST
-        );
-        foreach ($iterator as $item) {
-            $path = $item->getRealPath();
-            if ($path === false) {
-                continue;
-            }
-            if ($item->isDir()) {
-                @rmdir($path);
-            } else {
-                @unlink($path);
-            }
-        }
-    } catch (Throwable $e) {
-        foreach (glob($dir . DIRECTORY_SEPARATOR . '*') ?: [] as $f) {
-            if (is_file($f)) {
-                @unlink($f);
-            }
-        }
-    }
-    @rmdir($dir);
-}
-
-/**
- * Remove all images for a shop item: delete each file from DB paths, then remove items/{id} entirely.
- */
 function agro_shop_delete_item_assets(string $root, array $row, int $id): void
 {
-    $cols = ['image_main', 'image_gallery_1', 'image_gallery_2', 'image_gallery_3', 'image_gallery_4'];
-    foreach ($cols as $col) {
-        if (!empty($row[$col])) {
-            agro_shop_unlink_stored_path($root, (string) $row[$col]);
-        }
-    }
-    agro_shop_remove_item_directory($root, $id);
+    nexora_delete_agro_item_files($root, $row, $id);
 }
 
 function agro_shop_save_image(string $tmp, string $destPath, string $ext): bool
@@ -241,7 +180,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     } catch (Throwable $e) {
                         $pdo->rollBack();
                         if (isset($newId)) {
-                            agro_shop_remove_item_directory($root, $newId);
+                            nexora_delete_agro_item_directory($root, $newId);
                         }
                         $error = $e instanceof RuntimeException ? $e->getMessage() : 'Could not save product.';
                     }
@@ -293,10 +232,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $mainName = 'main.' . $mainExt;
                     $mainAbs = $itemDir . '/' . $mainName;
                     if (!empty($row['image_main'])) {
-                        $oldAbs = $root . '/' . ltrim((string) $row['image_main'], '/');
-                        if (is_file($oldAbs)) {
-                            @unlink($oldAbs);
-                        }
+                        nexora_delete_upload_file($root, (string) $row['image_main'], 'assets/uploads/agro');
                     }
                     if (agro_shop_save_image($_FILES['image_main']['tmp_name'], $mainAbs, $mainExt)) {
                         $mainRel = 'assets/uploads/agro/items/' . $uid . '/' . $mainName;
@@ -323,10 +259,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $gAbs = $itemDir . '/' . $gName;
                         $idx = $i - 1;
                         if (!empty($g[$idx])) {
-                            $oldG = $root . '/' . ltrim((string) $g[$idx], '/');
-                            if (is_file($oldG)) {
-                                @unlink($oldG);
-                            }
+                            nexora_delete_upload_file($root, (string) $g[$idx], 'assets/uploads/agro');
                         }
                         if (agro_shop_save_image($_FILES[$field]['tmp_name'], $gAbs, $gext)) {
                             $g[$idx] = 'assets/uploads/agro/items/' . $uid . '/' . $gName;
