@@ -13,6 +13,7 @@
         <a href="agro-orders.php">Agro Orders</a>
         <a href="printing-orders.php">Printing Orders</a>
         <a href="contact-details.php">Contact Details</a>
+        <a href="blog-posts.php">SEO Blog Posts</a>
         <a href="admin-accounts.php">Admin accounts</a>
         <a href="logout.php" class="admin-nav-logout">Logout</a>
     </nav>

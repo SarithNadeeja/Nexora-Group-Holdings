@@ -14,8 +14,17 @@ if (!defined('SITE_NAME')) {
     <meta name="description" content="<?php echo isset($metaDescription) ? htmlspecialchars($metaDescription) : 'Nexora Group Holdings - Modern corporate services across digital, agro, and printing solutions.'; ?>">
     <title><?php echo isset($pageTitle) ? htmlspecialchars($pageTitle) . ' | ' . SITE_NAME : SITE_NAME; ?></title>
     <link rel="icon" href="<?php echo nexora_url('assets/images/logos/main.jpeg'); ?>" type="image/jpeg">
+    <?php if (!empty($metaKeywords)): ?>
+        <meta name="keywords" content="<?php echo htmlspecialchars($metaKeywords); ?>">
+    <?php endif; ?>
+    <?php if (!empty($canonicalUrl)): ?>
+        <link rel="canonical" href="<?php echo htmlspecialchars($canonicalUrl); ?>">
+    <?php endif; ?>
     <?php if (!empty($metaOgUrl)): ?>
-        <meta property="og:type" content="product">
+        <?php
+        $resolvedOgType = isset($metaOgType) ? (string) $metaOgType : (!empty($seoMinimalLayout) ? 'article' : 'product');
+        ?>
+        <meta property="og:type" content="<?php echo htmlspecialchars($resolvedOgType); ?>">
         <meta property="og:url" content="<?php echo htmlspecialchars($metaOgUrl); ?>">
         <meta property="og:title" content="<?php echo htmlspecialchars(isset($metaOgTitle) ? $metaOgTitle : (isset($pageTitle) ? $pageTitle : SITE_NAME)); ?>">
         <meta property="og:description" content="<?php echo htmlspecialchars(isset($metaOgDescription) ? $metaOgDescription : ''); ?>">

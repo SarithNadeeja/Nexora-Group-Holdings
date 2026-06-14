@@ -18,3 +18,4 @@ nexora_admin_users_ensure_table($pdo);
 nexora_agro_orders_ensure_table($pdo);
 nexora_printing_orders_ensure_table($pdo);
 nexora_printing_custom_orders_ensure_table($pdo);
+nexora_blog_posts_ensure_table($pdo);

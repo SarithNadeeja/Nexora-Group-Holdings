@@ -244,3 +244,23 @@ function nexora_printing_custom_orders_ensure_table(PDO $pdo): void
         )
     ");
 }
+
+/**
+ * SEO blog posts (public URLs via sitemap only — not in site navigation).
+ */
+function nexora_blog_posts_ensure_table(PDO $pdo): void
+{
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS blog_posts (
+            id SERIAL PRIMARY KEY,
+            title VARCHAR(255) NOT NULL,
+            slug VARCHAR(255) NOT NULL UNIQUE,
+            meta_description VARCHAR(320) NOT NULL DEFAULT '',
+            meta_keywords VARCHAR(500) NOT NULL DEFAULT '',
+            content TEXT NOT NULL,
+            status VARCHAR(20) NOT NULL DEFAULT 'published',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ");
+}
