@@ -86,10 +86,9 @@ $footerDivisionContacts = nexora_division_contacts_all();
             <div class="footer-col">
                 <h4>Social Media</h4>
                 <div class="footer-social">
-                    <a href="#" aria-label="Facebook"><span>f</span> Facebook</a>
-                    <a href="#" aria-label="Instagram"><span>ig</span> Instagram</a>
-                    <a href="#" aria-label="TikTok"><span>tt</span> TikTok</a>
-                    <a href="#" aria-label="YouTube"><span>yt</span> YouTube</a>
+                    <?php foreach (nexora_social_links() as $social): ?>
+                        <a href="<?php echo htmlspecialchars($social['url']); ?>" target="_blank" rel="noopener noreferrer" aria-label="<?php echo htmlspecialchars($social['aria']); ?>"><span><?php echo htmlspecialchars($social['icon']); ?></span> <?php echo htmlspecialchars($social['label']); ?></a>
+                    <?php endforeach; ?>
                 </div>
             </div>
         </div>

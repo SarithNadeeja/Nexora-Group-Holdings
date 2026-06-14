@@ -178,3 +178,43 @@ function nexora_contact_href(?string $division = null, ?string $message = null):
     $wa = nexora_whatsapp_contact_url($division, $message);
     return $wa ?? nexora_url('contact.php');
 }
+
+/**
+ * Public social profile URLs (override with NEXORA_FACEBOOK_URL / NEXORA_TIKTOK_URL env vars).
+ *
+ * @return array<int, array{label: string, url: string, icon: string, aria: string}>
+ */
+function nexora_social_links(): array
+{
+    $facebook = getenv('NEXORA_FACEBOOK_URL');
+    if ($facebook === false || trim($facebook) === '') {
+        $facebook = 'https://www.facebook.com/share/1Gf2BfwVUZ/?mibextid=wwXIfr';
+    }
+    $tiktok = getenv('NEXORA_TIKTOK_URL');
+    if ($tiktok === false || trim($tiktok) === '') {
+        $tiktok = 'https://www.tiktok.com/@nexora.group.hold';
+    }
+
+    $links = [];
+    $facebook = trim($facebook);
+    $tiktok = trim($tiktok);
+
+    if ($facebook !== '') {
+        $links[] = [
+            'label' => 'Facebook',
+            'url' => $facebook,
+            'icon' => 'f',
+            'aria' => 'Nexora Group Holdings on Facebook',
+        ];
+    }
+    if ($tiktok !== '') {
+        $links[] = [
+            'label' => 'TikTok',
+            'url' => $tiktok,
+            'icon' => 'tt',
+            'aria' => 'Nexora Group Holdings on TikTok',
+        ];
+    }
+
+    return $links;
+}
