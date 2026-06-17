@@ -3387,7 +3387,8 @@ button.btn-cta {
         top: 0;
         left: 0;
         right: 0;
-        height: min(42vh, 300px);
+        height: 100vh;
+        height: 100dvh;
         z-index: 0;
         overflow: hidden;
         pointer-events: none;
@@ -3396,25 +3397,27 @@ button.btn-cta {
     .hero-cinematic--mobile-banner .hero-mobile-banner::after {
         content: "";
         position: absolute;
-        inset: auto 0 0;
-        height: 45%;
-        background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.45) 100%);
+        inset: 0;
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0.55) 100%);
     }
 
     .hero-cinematic--mobile-banner .hero-mobile-banner img {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        object-position: center top;
+        object-position: center center;
         display: block;
     }
 
     .hero-cinematic--mobile-banner {
-        min-height: auto;
+        min-height: 100vh;
+        min-height: 100dvh;
         overflow: visible;
         background: transparent;
         position: relative;
         z-index: 1;
+        display: flex;
+        align-items: center;
     }
 
     .hero-cinematic--mobile-banner .hero-video-wrap {
@@ -3424,8 +3427,10 @@ button.btn-cta {
     .hero-cinematic--mobile-banner .hero-content {
         position: relative;
         z-index: 2;
-        padding-top: calc(min(42vh, 300px) + 72px);
-        padding-bottom: 48px;
+        width: 100%;
+        padding: 100px 0 90px;
+        display: flex;
+        align-items: center;
     }
 
     main > .hero-cinematic--mobile-banner ~ section {
