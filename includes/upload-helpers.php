@@ -181,9 +181,20 @@ function nexora_ensure_upload_dirs(array $absolutePaths, int $mode = 0775): ?str
         $path = str_replace('\\', '/', $path);
         if (!nexora_ensure_upload_dir($path, $mode)) {
             if (is_dir($path)) {
-                return 'Upload folder exists but is not writable by PHP: ' . $path;
+                return 'Upload folder exists but is not writable by PHP: ' . $path
+                    . '. Set owner to the web server user (e.g. www-data) and chmod 775.';
             }
-            return 'Upload folder could not be created: ' . $path;
+
+            $hint = '';
+            $external = nexora_uploads_external_default();
+            $linkPath = nexora_fs_path(nexora_project_root(), 'assets', 'uploads');
+            if ($path === nexora_uploads_absolute_dir() || $path === str_replace('\\', '/', $linkPath)) {
+                $hint = ' Production expects assets/uploads to be a symlink to ' . $external
+                    . '. Run: sudo NEXORA_PROJECT_ROOT=' . nexora_project_root()
+                    . ' ./scripts/setup-uploads-symlink.sh — or set env NEXORA_UPLOADS_PATH=' . $external . '.';
+            }
+
+            return 'Upload folder could not be created: ' . $path . '.' . $hint;
         }
     }
     return null;
