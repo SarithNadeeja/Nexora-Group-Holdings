@@ -5,6 +5,7 @@
  */
 require_once dirname(__DIR__) . '/includes/config.php';
 require_once dirname(__DIR__) . '/includes/database.php';
+require_once dirname(__DIR__) . '/includes/upload-helpers.php';
 
 $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 if ($id <= 0) {
@@ -42,7 +43,7 @@ if (!$row || empty($row['pdf_path'])) {
 $root = dirname(__DIR__);
 $rel = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, ltrim((string) $row['pdf_path'], '/\\'));
 $abs = realpath($root . DIRECTORY_SEPARATOR . $rel);
-$pdfsDir = realpath($root . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'pdfs');
+$pdfsDir = realpath(nexora_uploads_fs_path($root, 'pdfs'));
 
 if ($abs === false || $pdfsDir === false || strpos($abs, $pdfsDir) !== 0 || !is_file($abs)) {
     http_response_code(404);

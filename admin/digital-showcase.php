@@ -2,6 +2,7 @@
 require_once __DIR__ . '/includes/auth.php';
 requireAdminAuth();
 require_once __DIR__ . '/includes/db.php';
+require_once dirname(__DIR__) . '/includes/upload-helpers.php';
 require_once dirname(__DIR__) . '/includes/upload-cleanup.php';
 
 $adminPageTitle = 'Digital Showcase Images';
@@ -37,20 +38,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!in_array($ext, $allowed, true)) {
                 $error = 'Allowed image types: JPG, JPEG, PNG, WEBP.';
             } else {
-                $uploadDir = dirname(__DIR__) . '/assets/uploads/digital-featured';
-                if (!is_dir($uploadDir)) {
-                    mkdir($uploadDir, 0775, true);
-                }
-
-                $filename = 'digital-show-' . date('YmdHis') . '-' . bin2hex(random_bytes(4)) . '.' . $ext;
-                $target = $uploadDir . '/' . $filename;
-                if (!move_uploaded_file($file['tmp_name'], $target)) {
-                    $error = 'Failed to store uploaded image.';
+                $uploadDir = nexora_uploads_fs_path($root, 'digital-featured');
+                $dirError = nexora_ensure_upload_dirs([nexora_uploads_absolute_dir($root), $uploadDir]);
+                if ($dirError !== null) {
+                    $error = $dirError;
                 } else {
-                    $relativePath = 'assets/uploads/digital-featured/' . $filename;
-                    $stmt = $pdo->prepare('INSERT INTO digital_featured_images (image_path) VALUES (?)');
-                    $stmt->execute([$relativePath]);
-                    $success = 'Image added to digital showcase.';
+                    $filename = 'digital-show-' . date('YmdHis') . '-' . bin2hex(random_bytes(4)) . '.' . $ext;
+                    $target = $uploadDir . '/' . $filename;
+                    if (!move_uploaded_file($file['tmp_name'], $target)) {
+                        $error = 'Failed to store uploaded image.';
+                    } else {
+                        $relativePath = nexora_uploads_public_path('digital-featured', $filename);
+                        $stmt = $pdo->prepare('INSERT INTO digital_featured_images (image_path) VALUES (?)');
+                        $stmt->execute([$relativePath]);
+                        $success = 'Image added to digital showcase.';
+                    }
                 }
             }
         }

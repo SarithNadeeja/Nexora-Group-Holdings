@@ -64,6 +64,78 @@ function nexora_project_root(): string
 }
 
 /**
+ * URL/DB-relative prefix for uploaded files (public paths stay assets/uploads/...).
+ */
+function nexora_uploads_url_prefix(): string
+{
+    return 'assets/uploads';
+}
+
+/**
+ * Default external upload storage on Ubuntu production (outside Git).
+ */
+function nexora_uploads_external_default(): string
+{
+    return '/var/www/nexora-uploads';
+}
+
+/**
+ * Absolute filesystem directory for uploads (follows assets/uploads symlink).
+ * Override with env NEXORA_UPLOADS_PATH for custom locations.
+ */
+function nexora_uploads_absolute_dir(?string $root = null): string
+{
+    if ($root === null) {
+        $root = nexora_project_root();
+    }
+
+    $env = getenv('NEXORA_UPLOADS_PATH');
+    if ($env !== false && trim($env) !== '') {
+        return rtrim(str_replace('\\', '/', trim($env)), '/');
+    }
+
+    $linkPath = nexora_fs_path($root, 'assets', 'uploads');
+    $resolved = realpath($linkPath);
+    if ($resolved !== false) {
+        return str_replace('\\', '/', $resolved);
+    }
+
+    return str_replace('\\', '/', $linkPath);
+}
+
+/**
+ * Build a public/DB-relative path under assets/uploads/.
+ */
+function nexora_uploads_public_path(string ...$parts): string
+{
+    $segments = [nexora_uploads_url_prefix()];
+    foreach ($parts as $part) {
+        $part = trim(str_replace('\\', '/', $part), '/');
+        if ($part !== '') {
+            $segments[] = $part;
+        }
+    }
+
+    return implode('/', $segments);
+}
+
+/**
+ * Build an absolute filesystem path inside the upload store.
+ */
+function nexora_uploads_fs_path(?string $root, string ...$parts): string
+{
+    $path = nexora_uploads_absolute_dir($root);
+    foreach ($parts as $part) {
+        $part = trim(str_replace('\\', '/', $part), '/');
+        if ($part !== '') {
+            $path .= '/' . $part;
+        }
+    }
+
+    return $path;
+}
+
+/**
  * True if PHP can write a file into this directory (more reliable than is_writable() alone).
  */
 function nexora_dir_is_writable(string $dir): bool
@@ -122,7 +194,7 @@ function nexora_ensure_upload_dirs(array $absolutePaths, int $mode = 0775): ?str
  */
 function nexora_bootstrap_upload_dirs(string $root): void
 {
-    $base = nexora_fs_path($root, 'assets', 'uploads');
+    $base = nexora_uploads_absolute_dir($root);
     $dirs = [
         $base,
         $base . '/images',

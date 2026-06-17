@@ -2,6 +2,7 @@
 require_once __DIR__ . '/includes/auth.php';
 requireAdminAuth();
 require_once __DIR__ . '/includes/db.php';
+require_once dirname(__DIR__) . '/includes/upload-helpers.php';
 require_once dirname(__DIR__) . '/includes/upload-cleanup.php';
 
 $adminPageTitle = 'Add Document';
@@ -39,17 +40,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($imageFile['error'] !== UPLOAD_ERR_OK || $pdfFile['error'] !== UPLOAD_ERR_OK) {
                 $error = 'File upload failed. Please try again.';
             } else {
-                $baseUploadDir = $root . '/assets/uploads';
-                $imageDir = $baseUploadDir . '/images';
-                $pdfDir = $baseUploadDir . '/pdfs';
-
-                if (!is_dir($imageDir)) {
-                    mkdir($imageDir, 0775, true);
-                }
-                if (!is_dir($pdfDir)) {
-                    mkdir($pdfDir, 0775, true);
-                }
-
+                $imageDir = nexora_uploads_fs_path($root, 'images');
+                $pdfDir = nexora_uploads_fs_path($root, 'pdfs');
+                $dirError = nexora_ensure_upload_dirs([$imageDir, $pdfDir]);
+                if ($dirError !== null) {
+                    $error = $dirError;
+                } else {
                 $imageExt = strtolower(pathinfo($imageFile['name'], PATHINFO_EXTENSION));
                 $pdfExt = strtolower(pathinfo($pdfFile['name'], PATHINFO_EXTENSION));
 
@@ -73,8 +69,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     } elseif (!move_uploaded_file($pdfFile['tmp_name'], $pdfTarget)) {
                         $error = 'Failed to save PDF file.';
                     } else {
-                        $imagePath = 'assets/uploads/images/' . $imageName;
-                        $pdfPath = 'assets/uploads/pdfs/' . $pdfName;
+                        $imagePath = nexora_uploads_public_path('images', $imageName);
+                        $pdfPath = nexora_uploads_public_path('pdfs', $pdfName);
 
                         $stmt = $pdo->prepare(
                             'INSERT INTO print_documents (name, pages, image_path, pdf_path, price) VALUES (?, ?, ?, ?, ?)'
@@ -86,6 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $error = 'Database insert failed.';
                         }
                     }
+                }
                 }
             }
         }

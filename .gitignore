@@ -1,2 +1,4 @@
-assets/uploads/*
-!assets/uploads/.gitkeep
+# User uploads live outside the Git repo at /var/www/nexora-uploads.
+# Production: assets/uploads is a symlink -> /var/www/nexora-uploads (see scripts/setup-uploads-symlink.sh).
+# Never commit uploaded files, the symlink, or a real uploads directory.
+assets/uploads

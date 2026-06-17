@@ -13,9 +13,9 @@ $error = '';
 $maxSamples = 30;
 
 $root = nexora_project_root();
-$uploadDir = nexora_fs_path($root, 'assets', 'uploads', 'printing-samples');
+$uploadDir = nexora_uploads_fs_path($root, 'printing-samples');
 $uploadDirError = nexora_ensure_upload_dirs([
-    nexora_fs_path($root, 'assets', 'uploads'),
+    nexora_uploads_absolute_dir($root),
     $uploadDir,
 ]);
 if ($uploadDirError !== null) {
@@ -115,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         throw new RuntimeException('Failed to save image.');
                     }
 
-                    $relPath = 'assets/uploads/printing-samples/' . $filename;
+                    $relPath = nexora_uploads_public_path('printing-samples', $filename);
                     $pdo->prepare(
                         'UPDATE printing_samples SET image_path = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
                     )->execute([$relPath, $newId]);
@@ -124,7 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 } catch (Throwable $e) {
                     $pdo->rollBack();
                     if (isset($newId)) {
-                        nexora_delete_printing_sample_file($root, 'assets/uploads/printing-samples/print-sample-' . $newId . '.' . $ext);
+                        nexora_delete_printing_sample_file($root, nexora_uploads_public_path('printing-samples', 'print-sample-' . $newId . '.' . $ext));
                     }
                     $error = $e instanceof RuntimeException ? $e->getMessage() : 'Could not save sample.';
                 }
@@ -159,7 +159,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (!nexora_save_uploaded_image($_FILES['sample_image']['tmp_name'], $absPath, $ext)) {
                         $error = 'Failed to replace image.';
                     } else {
-                        $imagePath = 'assets/uploads/printing-samples/' . $filename;
+                        $imagePath = nexora_uploads_public_path('printing-samples', $filename);
                     }
                 }
             }

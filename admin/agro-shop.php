@@ -12,10 +12,10 @@ $success = '';
 $error = '';
 
 $root = nexora_project_root();
-$agroUploadBase = nexora_fs_path($root, 'assets', 'uploads', 'agro');
-$agroItemsUploadRoot = nexora_fs_path($root, 'assets', 'uploads', 'agro', 'items');
+$agroUploadBase = nexora_uploads_fs_path($root, 'agro');
+$agroItemsUploadRoot = nexora_uploads_fs_path($root, 'agro', 'items');
 $uploadDirError = nexora_ensure_upload_dirs([
-    nexora_fs_path($root, 'assets', 'uploads'),
+    nexora_uploads_absolute_dir($root),
     $agroUploadBase,
     $agroItemsUploadRoot,
 ]);
@@ -148,7 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         }
                         $newId = (int) $idRow['id'];
 
-                        $itemDir = nexora_fs_path($root, 'assets', 'uploads', 'agro', 'items', (string) $newId);
+                        $itemDir = nexora_uploads_fs_path($root, 'agro', 'items', (string) $newId);
                         if (!nexora_ensure_upload_dir($itemDir)) {
                             throw new RuntimeException('Could not create upload folder: ' . $itemDir);
                         }
@@ -158,7 +158,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         if (!agro_shop_save_image($_FILES['image_main']['tmp_name'], $mainAbs, $mainExt)) {
                             throw new RuntimeException('Failed to save main image to: ' . $mainAbs);
                         }
-                        $mainRel = 'assets/uploads/agro/items/' . $newId . '/' . $mainName;
+                        $mainRel = nexora_uploads_public_path('agro', 'items', (string) $newId, $mainName);
 
                         for ($i = 1; $i <= 4; $i++) {
                             if (!empty($galleryExts[$i])) {
@@ -167,7 +167,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 if (!agro_shop_save_image($_FILES['image_gallery_' . $i]['tmp_name'], $gAbs, $galleryExts[$i])) {
                                     throw new RuntimeException('Failed to save gallery image ' . $i . '.');
                                 }
-                                $galleryPaths[$i - 1] = 'assets/uploads/agro/items/' . $newId . '/' . $gName;
+                                $galleryPaths[$i - 1] = nexora_uploads_public_path('agro', 'items', (string) $newId, $gName);
                             }
                         }
 
@@ -216,7 +216,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'Invalid stock status.';
         } else {
             $error = '';
-            $itemDir = nexora_fs_path($root, 'assets', 'uploads', 'agro', 'items', (string) $uid);
+            $itemDir = nexora_uploads_fs_path($root, 'agro', 'items', (string) $uid);
             if (!nexora_ensure_upload_dir($itemDir)) {
                 $error = 'Upload folder is not writable: ' . $itemDir;
             }
@@ -241,7 +241,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         nexora_delete_upload_file($root, (string) $row['image_main'], 'assets/uploads/agro');
                     }
                     if (agro_shop_save_image($_FILES['image_main']['tmp_name'], $mainAbs, $mainExt)) {
-                        $mainRel = 'assets/uploads/agro/items/' . $uid . '/' . $mainName;
+                        $mainRel = nexora_uploads_public_path('agro', 'items', (string) $uid, $mainName);
                     } else {
                         $error = 'Failed to replace main image.';
                     }
@@ -268,7 +268,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             nexora_delete_upload_file($root, (string) $g[$idx], 'assets/uploads/agro');
                         }
                         if (agro_shop_save_image($_FILES[$field]['tmp_name'], $gAbs, $gext)) {
-                            $g[$idx] = 'assets/uploads/agro/items/' . $uid . '/' . $gName;
+                            $g[$idx] = nexora_uploads_public_path('agro', 'items', (string) $uid, $gName);
                         } else {
                             $error = 'Failed to save gallery image ' . $i . '.';
                             break;

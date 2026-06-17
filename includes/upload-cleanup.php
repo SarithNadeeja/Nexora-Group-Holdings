@@ -1,10 +1,13 @@
 <?php
 /**
  * Delete uploaded files under assets/uploads/ safely.
+ * Files are stored outside Git (default: /var/www/nexora-uploads via symlink).
  */
 
+require_once __DIR__ . '/upload-helpers.php';
+
 /**
- * Resolve a stored relative path to an absolute path inside assets/uploads/.
+ * Resolve a stored relative path to an absolute path inside the upload store.
  */
 function nexora_uploads_absolute_path(string $root, string $relativePath, string $requiredPrefix): ?string
 {
@@ -18,10 +21,15 @@ function nexora_uploads_absolute_path(string $root, string $relativePath, string
         return null;
     }
 
-    $uploadsRoot = str_replace('\\', '/', $root) . '/assets/uploads';
-    $absolute = str_replace('\\', '/', $root) . '/' . $relativePath;
+    $candidate = str_replace('\\', '/', $root) . '/' . $relativePath;
+    $resolved = realpath($candidate);
+    $absolute = $resolved !== false ? str_replace('\\', '/', $resolved) : $candidate;
 
-    if (strpos($absolute, $uploadsRoot) !== 0) {
+    $uploadsRoot = nexora_uploads_absolute_dir($root);
+    $resolvedRoot = realpath($uploadsRoot);
+    $uploadsRootNorm = str_replace('\\', '/', $resolvedRoot !== false ? $resolvedRoot : $uploadsRoot);
+
+    if (strpos($absolute, $uploadsRootNorm) !== 0) {
         return null;
     }
 
@@ -87,7 +95,7 @@ function nexora_delete_agro_item_directory(string $root, int $id): void
         return;
     }
 
-    $dir = str_replace('\\', '/', $root) . '/assets/uploads/agro/items/' . $id;
+    $dir = nexora_uploads_fs_path($root, 'agro', 'items', (string) $id);
     if (!is_dir($dir)) {
         return;
     }

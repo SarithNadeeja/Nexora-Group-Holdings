@@ -13,9 +13,9 @@ $error = '';
 $maxImages = 20;
 
 $root = nexora_project_root();
-$uploadDir = nexora_fs_path($root, 'assets', 'uploads', 'digital-gallery');
+$uploadDir = nexora_uploads_fs_path($root, 'digital-gallery');
 $uploadDirError = nexora_ensure_upload_dirs([
-    nexora_fs_path($root, 'assets', 'uploads'),
+    nexora_uploads_absolute_dir($root),
     $uploadDir,
 ]);
 if ($uploadDirError !== null) {
@@ -73,14 +73,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         throw new RuntimeException('Failed to save image.');
                     }
 
-                    $relPath = 'assets/uploads/digital-gallery/' . $filename;
+                    $relPath = nexora_uploads_public_path('digital-gallery', $filename);
                     $pdo->prepare('UPDATE digital_gallery_images SET image_path = ? WHERE id = ?')->execute([$relPath, $newId]);
                     $pdo->commit();
                     $success = 'Image added to digital gallery.';
                 } catch (Throwable $e) {
                     $pdo->rollBack();
                     if (isset($newId, $ext)) {
-                        nexora_delete_digital_gallery_file($root, 'assets/uploads/digital-gallery/digital-gallery-' . $newId . '.' . $ext);
+                        nexora_delete_digital_gallery_file($root, nexora_uploads_public_path('digital-gallery', 'digital-gallery-' . $newId . '.' . $ext));
                     }
                     $error = $e instanceof RuntimeException ? $e->getMessage() : 'Could not save image.';
                 }
