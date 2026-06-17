@@ -100,36 +100,6 @@ a {
     font-weight: 700;
 }
 
-.brand-text {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 0;
-}
-
-.brand-name {
-    font-weight: 700;
-    line-height: 1.2;
-}
-
-.brand-address {
-    font-size: 0.72rem;
-    font-weight: 500;
-    line-height: 1.3;
-    color: var(--muted);
-    max-width: 280px;
-}
-
-.site-header.header-over-hero .brand-address {
-    color: rgba(255, 255, 255, 0.85);
-    text-shadow: 0 2px 14px rgba(0, 0, 0, 0.6);
-}
-
-.site-header.header-scrolled .brand-address {
-    color: var(--muted);
-    text-shadow: none;
-}
-
 .brand img {
     width: 44px;
     height: 44px;
