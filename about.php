@@ -24,7 +24,7 @@ include __DIR__ . '/includes/navbar.php';
         <div class="container about-overview-grid">
             <div class="about-overview-content reveal-on-scroll reveal-left">
                 <h2>Who We Are</h2>
-                <p>Founded in 2025, Nexora Group Holdings is dedicated to delivering high-quality solutions across multiple industries. With a strong focus on innovation and customer satisfaction, we continue to grow and expand our services to meet modern business needs.</p>
+                <p>Founded in 2026, Nexora Group Holdings is dedicated to delivering high-quality solutions across multiple industries. With a strong focus on innovation and customer satisfaction, we continue to grow and expand our services to meet modern business needs.</p>
             </div>
             <div class="about-overview-media reveal-on-scroll reveal-right">
                 <?php if (file_exists($aboutImagePath)): ?>
@@ -42,7 +42,7 @@ include __DIR__ . '/includes/navbar.php';
             <div class="about-details-grid">
                 <article class="about-detail-card reveal-on-scroll" style="--delay: 0s;">
                     <h3>Founded</h3>
-                    <p class="about-detail-value">2025</p>
+                    <p class="about-detail-value">2026</p>
                 </article>
                 <article class="about-detail-card reveal-on-scroll" style="--delay: 0.08s;">
                     <h3>Founder</h3>
