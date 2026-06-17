@@ -128,6 +128,8 @@ function nexora_bootstrap_upload_dirs(string $root): void
         $base . '/images',
         $base . '/pdfs',
         $base . '/digital-featured',
+        $base . '/digital-gallery',
+        $base . '/printing-samples',
         $base . '/agro',
         $base . '/agro/items',
     ];

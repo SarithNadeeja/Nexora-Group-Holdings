@@ -14,7 +14,10 @@
             <?php else: ?>
                 <span class="logo-fallback">N</span>
             <?php endif; ?>
-            <span>Nexora Group Holdings</span>
+            <span class="brand-text">
+                <span class="brand-name">Nexora Group Holdings</span>
+                <span class="brand-address"><?php echo htmlspecialchars(SITE_ADDRESS); ?></span>
+            </span>
         </a>
 
         <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation">Menu</button>

@@ -63,6 +63,22 @@ function nexora_delete_showcase_image_file(string $root, ?string $relativePath):
 }
 
 /**
+ * Delete digital gallery image file.
+ */
+function nexora_delete_digital_gallery_file(string $root, ?string $relativePath): void
+{
+    nexora_delete_upload_file($root, $relativePath, 'assets/uploads/digital-gallery');
+}
+
+/**
+ * Delete printing sample image file.
+ */
+function nexora_delete_printing_sample_file(string $root, ?string $relativePath): void
+{
+    nexora_delete_upload_file($root, $relativePath, 'assets/uploads/printing-samples');
+}
+
+/**
  * Recursively remove assets/uploads/agro/items/{id}/ and all contents.
  */
 function nexora_delete_agro_item_directory(string $root, int $id): void

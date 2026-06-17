@@ -100,6 +100,36 @@ a {
     font-weight: 700;
 }
 
+.brand-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.brand-name {
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.brand-address {
+    font-size: 0.72rem;
+    font-weight: 500;
+    line-height: 1.3;
+    color: var(--muted);
+    max-width: 280px;
+}
+
+.site-header.header-over-hero .brand-address {
+    color: rgba(255, 255, 255, 0.85);
+    text-shadow: 0 2px 14px rgba(0, 0, 0, 0.6);
+}
+
+.site-header.header-scrolled .brand-address {
+    color: var(--muted);
+    text-shadow: none;
+}
+
 .brand img {
     width: 44px;
     height: 44px;
@@ -189,6 +219,10 @@ a {
 
 .hero-overlay {
     background: rgba(0, 0, 0, 0.6);
+}
+
+.hero-mobile-banner {
+    display: none;
 }
 
 .hero-content {
@@ -1336,6 +1370,193 @@ a {
     display: block;
 }
 
+/* Digital Gallery */
+.digital-gallery-section {
+    padding: 88px 0;
+    background: linear-gradient(180deg, #f8fafc 0%, #ffffff 55%, #f1f5f9 100%);
+}
+
+.digital-gallery-heading .digital-page-label {
+    margin-bottom: 10px;
+}
+
+.digital-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-auto-rows: 220px;
+    gap: 14px;
+}
+
+.digital-gallery-item {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    background: #0f172a;
+    box-shadow: 0 14px 30px rgba(15, 23, 42, 0.12);
+    transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+
+.digital-gallery-item-wide {
+    grid-column: span 2;
+}
+
+.digital-gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.55s ease, filter 0.35s ease;
+}
+
+.digital-gallery-item-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.05) 0%, rgba(15, 23, 42, 0.55) 100%);
+    opacity: 0;
+    transition: opacity 0.35s ease;
+}
+
+.digital-gallery-item-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 999px;
+    border: 2px solid rgba(255, 255, 255, 0.9);
+    color: #ffffff;
+    font-size: 1.8rem;
+    line-height: 48px;
+    text-align: center;
+    background: rgba(15, 23, 42, 0.35);
+    backdrop-filter: blur(4px);
+}
+
+.digital-gallery-item:hover,
+.digital-gallery-item:focus-visible {
+    transform: translateY(-6px);
+    box-shadow: 0 22px 40px rgba(15, 23, 42, 0.2);
+    outline: none;
+}
+
+.digital-gallery-item:hover img,
+.digital-gallery-item:focus-visible img {
+    transform: scale(1.06);
+    filter: brightness(0.92);
+}
+
+.digital-gallery-item:hover .digital-gallery-item-overlay,
+.digital-gallery-item:focus-visible .digital-gallery-item-overlay {
+    opacity: 1;
+}
+
+.digital-gallery-empty {
+    border: 1px dashed #cbd5e1;
+    border-radius: 16px;
+    padding: 42px 24px;
+    text-align: center;
+    color: #64748b;
+    background: rgba(255, 255, 255, 0.7);
+}
+
+.digital-gallery-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.digital-gallery-lightbox.is-open {
+    display: flex;
+}
+
+.digital-gallery-lightbox-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(2, 8, 23, 0.88);
+}
+
+.digital-gallery-lightbox-panel {
+    position: relative;
+    z-index: 2;
+    width: min(1100px, 100%);
+    max-height: calc(100vh - 40px);
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 10px;
+}
+
+.digital-gallery-lightbox-figure {
+    margin: 0;
+    max-height: calc(100vh - 80px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.digital-gallery-lightbox-img {
+    max-width: 100%;
+    max-height: calc(100vh - 120px);
+    width: auto;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+    object-fit: contain;
+    background: #0f172a;
+}
+
+.digital-gallery-lightbox-caption {
+    color: #e2e8f0;
+    font-size: 0.92rem;
+}
+
+.digital-gallery-lightbox-close {
+    position: absolute;
+    top: -8px;
+    right: 0;
+    border: none;
+    background: transparent;
+    color: #ffffff;
+    font-size: 2.2rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 4px 8px;
+}
+
+.digital-gallery-lightbox-nav {
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: rgba(15, 23, 42, 0.55);
+    color: #ffffff;
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: grid;
+    place-items: center;
+    transition: background 0.25s ease, transform 0.25s ease;
+}
+
+.digital-gallery-lightbox-nav:hover {
+    background: rgba(37, 99, 235, 0.85);
+    transform: scale(1.05);
+}
+
+body.digital-gallery-open {
+    overflow: hidden;
+}
+
 .work-card {
     position: relative;
     overflow: hidden;
@@ -2333,7 +2554,8 @@ button.agro-wa-btn {
 }
 
 .print-method-section,
-.print-documents-section {
+.print-documents-section,
+.print-samples-section {
     padding: 78px 0;
     background: #ffffff;
 }
@@ -2413,6 +2635,54 @@ button.agro-wa-btn {
     gap: 10px;
     margin-top: 12px;
     flex-wrap: wrap;
+}
+
+.print-sample-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.print-sample-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.07);
+    transition: transform 0.32s ease, box-shadow 0.32s ease, border-color 0.32s ease;
+}
+
+.print-sample-card:hover {
+    transform: translateY(-7px);
+    border-color: #bfdbfe;
+    box-shadow: 0 22px 36px rgba(15, 23, 42, 0.14);
+}
+
+.print-sample-media {
+    overflow: hidden;
+    min-height: 220px;
+}
+
+.print-sample-media img {
+    width: 100%;
+    height: 100%;
+    min-height: 220px;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.print-sample-card:hover .print-sample-media img {
+    transform: scale(1.05);
+}
+
+.print-sample-body {
+    padding: 18px;
+}
+
+.print-sample-body p {
+    color: #4b5563;
+    line-height: 1.55;
+    margin: 0;
 }
 
 .btn-print-secondary {
@@ -3022,7 +3292,8 @@ button.btn-cta {
         grid-template-columns: 1fr;
     }
 
-    .print-doc-grid {
+    .print-doc-grid,
+    .print-sample-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
@@ -3032,6 +3303,11 @@ button.btn-cta {
 
     .digital-work-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .digital-gallery-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-auto-rows: 200px;
     }
 
     .digital-process-grid {
@@ -3133,6 +3409,63 @@ button.btn-cta {
     .site-header.header-over-hero .main-nav a {
         color: var(--text);
         text-shadow: none;
+    }
+
+    .hero-cinematic--mobile-banner .hero-mobile-banner {
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: min(42vh, 300px);
+        z-index: 0;
+        overflow: hidden;
+        pointer-events: none;
+    }
+
+    .hero-cinematic--mobile-banner .hero-mobile-banner::after {
+        content: "";
+        position: absolute;
+        inset: auto 0 0;
+        height: 45%;
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.45) 100%);
+    }
+
+    .hero-cinematic--mobile-banner .hero-mobile-banner img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center top;
+        display: block;
+    }
+
+    .hero-cinematic--mobile-banner {
+        min-height: auto;
+        overflow: visible;
+        background: transparent;
+        position: relative;
+        z-index: 1;
+    }
+
+    .hero-cinematic--mobile-banner .hero-video-wrap {
+        display: none;
+    }
+
+    .hero-cinematic--mobile-banner .hero-content {
+        position: relative;
+        z-index: 2;
+        padding-top: calc(min(42vh, 300px) + 72px);
+        padding-bottom: 48px;
+    }
+
+    main > .hero-cinematic--mobile-banner ~ section {
+        position: relative;
+        z-index: 2;
+    }
+
+    body:has(.hero-cinematic--mobile-banner) .site-footer {
+        position: relative;
+        z-index: 2;
     }
 
     .hero-content {
@@ -3261,13 +3594,58 @@ button.btn-cta {
         height: 300px;
     }
 
-    .print-doc-grid {
+    .print-doc-grid,
+    .print-sample-grid {
         grid-template-columns: 1fr;
     }
 
     .digital-services-grid,
     .digital-work-grid {
         grid-template-columns: 1fr;
+    }
+
+    .digital-gallery-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-auto-rows: 170px;
+        gap: 10px;
+    }
+
+    .digital-gallery-item-wide {
+        grid-column: span 2;
+    }
+
+    .digital-gallery-lightbox {
+        padding: 12px;
+    }
+
+    .digital-gallery-lightbox-panel {
+        gap: 6px;
+    }
+
+    .digital-gallery-lightbox-nav {
+        width: 38px;
+        height: 38px;
+        font-size: 1rem;
+    }
+
+    .digital-gallery-lightbox-close {
+        top: -4px;
+        right: -2px;
+    }
+
+    @media (max-width: 520px) {
+        .digital-gallery-grid {
+            grid-template-columns: 1fr;
+            grid-auto-rows: 220px;
+        }
+
+        .digital-gallery-item-wide {
+            grid-column: span 1;
+        }
+
+        .digital-gallery-lightbox-img {
+            max-height: calc(100vh - 150px);
+        }
     }
 
     .digital-showcase-item {
@@ -3279,11 +3657,13 @@ button.btn-cta {
     .digital-about-section,
     .digital-services-section,
     .digital-showcase-section,
+    .digital-gallery-section,
     .digital-process-section,
     .digital-page-cta,
     .digital-comment-form-section,
     .print-method-section,
     .print-documents-section,
+    .print-samples-section,
     .printing-custom-cta {
         padding-top: 60px;
         padding-bottom: 60px;

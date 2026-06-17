@@ -36,7 +36,7 @@ $footerDivisionContacts = nexora_division_contacts_all();
 
             <div class="footer-col">
                 <h4>Contact</h4>
-                <p class="footer-contact-address">Colombo, Sri Lanka</p>
+                <p class="footer-contact-address"><?php echo htmlspecialchars(SITE_ADDRESS); ?></p>
                 <ul class="footer-contact footer-contact-divisions">
                     <li class="footer-contact-division">
                         <strong>Digital</strong>

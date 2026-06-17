@@ -264,3 +264,35 @@ function nexora_blog_posts_ensure_table(PDO $pdo): void
         )
     ");
 }
+
+/**
+ * Print work samples shown on the Printing page (PostgreSQL).
+ */
+function nexora_printing_samples_ensure_table(PDO $pdo): void
+{
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS printing_samples (
+            id SERIAL PRIMARY KEY,
+            description TEXT NOT NULL,
+            image_path VARCHAR(500) NOT NULL,
+            sort_order INTEGER NOT NULL DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ");
+}
+
+/**
+ * Digital portfolio gallery images (PostgreSQL). Max 20 on public Digital page.
+ */
+function nexora_digital_gallery_images_ensure_table(PDO $pdo): void
+{
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS digital_gallery_images (
+            id SERIAL PRIMARY KEY,
+            image_path VARCHAR(500) NOT NULL,
+            sort_order INTEGER NOT NULL DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ");
+}

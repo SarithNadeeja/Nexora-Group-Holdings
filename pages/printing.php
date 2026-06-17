@@ -9,14 +9,19 @@ $pageTitle = 'Nexora Printing';
 require_once dirname(__DIR__) . '/includes/database.php';
 
 $documents = [];
+$printSamples = [];
 $dbError = null;
 
 $pdo = nexora_db_connect();
 if ($pdo) {
     try {
         nexora_print_documents_ensure_table($pdo);
+        nexora_printing_samples_ensure_table($pdo);
         $stmt = $pdo->query('SELECT id, name, pages, image_path, pdf_path, price FROM print_documents ORDER BY id DESC');
         $documents = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $stmtSamples = $pdo->query('SELECT id, description, image_path FROM printing_samples ORDER BY sort_order DESC, id DESC');
+        $printSamples = $stmtSamples->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
         $dbError = 'No print documents found right now.';
     }
@@ -132,6 +137,41 @@ include dirname(__DIR__) . '/includes/navbar.php';
             <?php endif; ?>
         </div>
     </section>
+
+    <!-- Print Work Samples -->
+    <?php if (count($printSamples) > 0): ?>
+    <section class="print-samples-section">
+        <div class="container">
+            <div class="section-heading">
+                <h2>Our Print Work</h2>
+                <p>See examples of our printing quality and finishes.</p>
+            </div>
+            <div class="print-sample-grid">
+                <?php foreach ($printSamples as $index => $sample): ?>
+                    <?php
+                    $sampleDesc = isset($sample['description']) ? trim((string) $sample['description']) : '';
+                    $sampleImage = isset($sample['image_path']) ? trim((string) $sample['image_path']) : '';
+                    $delay = ($index % 6) * 0.08;
+                    ?>
+                    <article class="print-sample-card reveal-on-scroll" style="--delay: <?php echo htmlspecialchars((string) $delay); ?>s;">
+                        <div class="print-sample-media">
+                            <?php if ($sampleImage !== '' && $sampleImage !== 'pending'): ?>
+                                <img src="<?php echo BASE_URL . '/' . ltrim(htmlspecialchars($sampleImage), '/'); ?>" alt="<?php echo htmlspecialchars($sampleDesc !== '' ? $sampleDesc : 'Print sample'); ?>">
+                            <?php else: ?>
+                                <div class="dp-image-fallback">No Preview</div>
+                            <?php endif; ?>
+                        </div>
+                        <?php if ($sampleDesc !== ''): ?>
+                            <div class="print-sample-body">
+                                <p><?php echo nl2br(htmlspecialchars($sampleDesc)); ?></p>
+                            </div>
+                        <?php endif; ?>
+                    </article>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </section>
+    <?php endif; ?>
 
     <!-- Custom Print CTA -->
     <section class="printing-custom-cta">

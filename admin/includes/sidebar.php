@@ -8,7 +8,9 @@
     <nav class="admin-sidebar-nav">
         <a href="dashboard.php">Dashboard</a>
         <a href="add-document.php">Add New Document</a>
+        <a href="printing-samples.php">Print Samples</a>
         <a href="digital-showcase.php">Digital Showcase Images</a>
+        <a href="digital-gallery.php">Digital Gallery</a>
         <a href="agro-shop.php">Agro Shop Items</a>
         <a href="agro-orders.php">Agro Orders</a>
         <a href="printing-orders.php">Printing Orders</a>

@@ -5,6 +5,7 @@
  */
 
 define('SITE_NAME', 'Nexora Group Holdings');
+define('SITE_ADDRESS', 'Vijaya, infront of the post office, Diganathenna, Bandarawela');
 
 /**
  * Auto-detect project base URL from DOCUMENT_ROOT for local/XAMPP/cPanel.

@@ -4,6 +4,7 @@ require_once dirname(__DIR__) . '/includes/database.php';
 $pageTitle = 'Nexora Digital';
 
 $showcaseImages = [];
+$galleryImages = [];
 $testimonials = [];
 $commentFlash = null;
 
@@ -11,6 +12,7 @@ $pdo = nexora_db_connect();
 if ($pdo) {
     try {
         nexora_digital_featured_images_ensure_table($pdo);
+        nexora_digital_gallery_images_ensure_table($pdo);
         nexora_digital_client_comments_ensure_table($pdo);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['digital_comment_submit'])) {
@@ -38,10 +40,14 @@ if ($pdo) {
         $stmt = $pdo->query('SELECT image_path FROM digital_featured_images ORDER BY id DESC LIMIT 10');
         $showcaseImages = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        $stmtGallery = $pdo->query('SELECT id, image_path FROM digital_gallery_images ORDER BY sort_order DESC, id DESC LIMIT 20');
+        $galleryImages = $stmtGallery->fetchAll(PDO::FETCH_ASSOC);
+
         $stmtT = $pdo->query('SELECT id, client_name, comment, created_at FROM digital_client_comments ORDER BY id DESC LIMIT 50');
         $testimonials = $stmtT->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
         $showcaseImages = [];
+        $galleryImages = [];
         $testimonials = [];
         if ($commentFlash === null) {
             $commentFlash = ['type' => 'error', 'message' => 'Comments are temporarily unavailable.'];
@@ -187,6 +193,67 @@ include dirname(__DIR__) . '/includes/navbar.php';
             </div>
         </div>
     </section>
+
+    <!-- Digital Gallery -->
+    <section class="digital-gallery-section" id="digital-gallery">
+        <div class="container">
+            <div class="section-heading digital-gallery-heading reveal-on-scroll">
+                <p class="digital-page-label">PORTFOLIO</p>
+                <h2>Digital Gallery</h2>
+                <p>A curated look at our photography, videography, and creative work.</p>
+            </div>
+
+            <?php if (count($galleryImages) > 0): ?>
+                <div class="digital-gallery-grid reveal-on-scroll" id="digitalGalleryGrid">
+                    <?php $galleryDisplayIndex = 0; ?>
+                    <?php foreach ($galleryImages as $image): ?>
+                        <?php
+                        $imagePath = isset($image['image_path']) ? trim((string) $image['image_path']) : '';
+                        if ($imagePath === '' || $imagePath === 'pending') {
+                            continue;
+                        }
+                        $imageUrl = BASE_URL . '/' . ltrim($imagePath, '/');
+                        $delay = ($galleryDisplayIndex % 8) * 0.05;
+                        $wideClass = ($galleryDisplayIndex % 7 === 0) ? ' digital-gallery-item-wide' : '';
+                        ?>
+                        <button
+                            type="button"
+                            class="digital-gallery-item<?php echo $wideClass; ?> reveal-on-scroll"
+                            style="--delay: <?php echo htmlspecialchars((string) $delay); ?>s;"
+                            data-gallery-index="<?php echo (int) $galleryDisplayIndex; ?>"
+                            data-gallery-src="<?php echo htmlspecialchars($imageUrl, ENT_QUOTES, 'UTF-8'); ?>"
+                            aria-label="View gallery image <?php echo (int) ($galleryDisplayIndex + 1); ?>"
+                        >
+                            <img src="<?php echo htmlspecialchars($imageUrl, ENT_QUOTES, 'UTF-8'); ?>" alt="Nexora Digital gallery image <?php echo (int) ($galleryDisplayIndex + 1); ?>" loading="lazy">
+                            <span class="digital-gallery-item-overlay" aria-hidden="true">
+                                <span class="digital-gallery-item-icon">+</span>
+                            </span>
+                        </button>
+                        <?php $galleryDisplayIndex++; ?>
+                    <?php endforeach; ?>
+                </div>
+            <?php else: ?>
+                <div class="digital-gallery-empty reveal-on-scroll">
+                    <p>Gallery photos will appear here once uploaded from Admin &gt; Digital Gallery.</p>
+                </div>
+            <?php endif; ?>
+        </div>
+    </section>
+
+    <?php if (count($galleryImages) > 0): ?>
+    <div class="digital-gallery-lightbox" id="digitalGalleryLightbox" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Gallery image viewer">
+        <div class="digital-gallery-lightbox-backdrop" data-gallery-close tabindex="-1"></div>
+        <div class="digital-gallery-lightbox-panel">
+            <button type="button" class="digital-gallery-lightbox-close" data-gallery-close aria-label="Close gallery">&times;</button>
+            <button type="button" class="digital-gallery-lightbox-nav digital-gallery-lightbox-prev" data-gallery-prev aria-label="Previous image">&#10094;</button>
+            <figure class="digital-gallery-lightbox-figure">
+                <img class="digital-gallery-lightbox-img" id="digitalGalleryLightboxImg" src="" alt="">
+                <figcaption class="digital-gallery-lightbox-caption" id="digitalGalleryLightboxCaption"></figcaption>
+            </figure>
+            <button type="button" class="digital-gallery-lightbox-nav digital-gallery-lightbox-next" data-gallery-next aria-label="Next image">&#10095;</button>
+        </div>
+    </div>
+    <?php endif; ?>
 
     <!-- Process -->
     <section class="digital-process-section">

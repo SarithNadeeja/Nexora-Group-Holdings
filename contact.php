@@ -78,7 +78,7 @@ include __DIR__ . '/includes/navbar.php';
                 <ul class="contact-detail-list">
                     <li>
                         <span class="contact-detail-icon" aria-hidden="true">📍</span>
-                        <div><strong>Address:</strong> Colombo, Sri Lanka</div>
+                        <div><strong>Address:</strong> <?php echo htmlspecialchars(SITE_ADDRESS); ?></div>
                     </li>
                 </ul>
 
@@ -184,10 +184,10 @@ include __DIR__ . '/includes/navbar.php';
         <div class="container reveal-on-scroll">
             <div class="contact-map-frame">
                 <iframe
-                    title="Nexora location map"
+                    title="Nexora Printing Solutions location map"
                     loading="lazy"
                     referrerpolicy="no-referrer-when-downgrade"
-                    src="https://www.google.com/maps?q=Colombo%2C%20Sri%20Lanka&output=embed"></iframe>
+                    src="https://www.google.com/maps?q=6.8590957,80.9668407&amp;hl=en&amp;z=17&amp;output=embed"></iframe>
             </div>
         </div>
     </section>

@@ -19,3 +19,5 @@ nexora_agro_orders_ensure_table($pdo);
 nexora_printing_orders_ensure_table($pdo);
 nexora_printing_custom_orders_ensure_table($pdo);
 nexora_blog_posts_ensure_table($pdo);
+nexora_printing_samples_ensure_table($pdo);
+nexora_digital_gallery_images_ensure_table($pdo);

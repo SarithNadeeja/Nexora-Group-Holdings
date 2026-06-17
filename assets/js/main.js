@@ -651,5 +651,114 @@
             });
         });
     }
+
+    var digitalGalleryLightbox = document.getElementById('digitalGalleryLightbox');
+    var digitalGalleryItems = document.querySelectorAll('.digital-gallery-item[data-gallery-src]');
+    if (digitalGalleryLightbox && digitalGalleryItems.length) {
+        var galleryLightboxImg = document.getElementById('digitalGalleryLightboxImg');
+        var galleryLightboxCaption = document.getElementById('digitalGalleryLightboxCaption');
+        var gallerySources = [];
+        var galleryActiveIndex = 0;
+        var galleryLastFocus = null;
+
+        digitalGalleryItems.forEach(function (item) {
+            gallerySources.push(item.getAttribute('data-gallery-src') || '');
+        });
+
+        function galleryShowAt(index) {
+            if (!gallerySources.length || !galleryLightboxImg) {
+                return;
+            }
+            galleryActiveIndex = (index + gallerySources.length) % gallerySources.length;
+            galleryLightboxImg.src = gallerySources[galleryActiveIndex];
+            galleryLightboxImg.alt = 'Nexora Digital gallery image ' + (galleryActiveIndex + 1);
+            if (galleryLightboxCaption) {
+                galleryLightboxCaption.textContent = (galleryActiveIndex + 1) + ' / ' + gallerySources.length;
+            }
+        }
+
+        function galleryOpen(index) {
+            galleryLastFocus = document.activeElement;
+            galleryShowAt(index);
+            digitalGalleryLightbox.classList.add('is-open');
+            digitalGalleryLightbox.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('digital-gallery-open');
+            var closeBtn = digitalGalleryLightbox.querySelector('.digital-gallery-lightbox-close');
+            if (closeBtn) {
+                closeBtn.focus();
+            }
+        }
+
+        function galleryClose() {
+            digitalGalleryLightbox.classList.remove('is-open');
+            digitalGalleryLightbox.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('digital-gallery-open');
+            if (galleryLightboxImg) {
+                galleryLightboxImg.removeAttribute('src');
+            }
+            if (galleryLastFocus && typeof galleryLastFocus.focus === 'function') {
+                galleryLastFocus.focus();
+            }
+        }
+
+        digitalGalleryItems.forEach(function (item) {
+            item.addEventListener('click', function () {
+                var index = parseInt(item.getAttribute('data-gallery-index') || '0', 10);
+                galleryOpen(index);
+            });
+        });
+
+        digitalGalleryLightbox.querySelectorAll('[data-gallery-close]').forEach(function (el) {
+            el.addEventListener('click', galleryClose);
+        });
+
+        var galleryPrev = digitalGalleryLightbox.querySelector('[data-gallery-prev]');
+        var galleryNext = digitalGalleryLightbox.querySelector('[data-gallery-next]');
+        if (galleryPrev) {
+            galleryPrev.addEventListener('click', function () {
+                galleryShowAt(galleryActiveIndex - 1);
+            });
+        }
+        if (galleryNext) {
+            galleryNext.addEventListener('click', function () {
+                galleryShowAt(galleryActiveIndex + 1);
+            });
+        }
+
+        document.addEventListener('keydown', function (e) {
+            if (!digitalGalleryLightbox.classList.contains('is-open')) {
+                return;
+            }
+            if (e.key === 'Escape') {
+                galleryClose();
+            } else if (e.key === 'ArrowLeft') {
+                galleryShowAt(galleryActiveIndex - 1);
+            } else if (e.key === 'ArrowRight') {
+                galleryShowAt(galleryActiveIndex + 1);
+            }
+        });
+
+        var galleryTouchStartX = 0;
+        digitalGalleryLightbox.addEventListener('touchstart', function (e) {
+            if (e.changedTouches && e.changedTouches[0]) {
+                galleryTouchStartX = e.changedTouches[0].clientX;
+            }
+        }, { passive: true });
+
+        digitalGalleryLightbox.addEventListener('touchend', function (e) {
+            if (!e.changedTouches || !e.changedTouches[0]) {
+                return;
+            }
+            var deltaX = e.changedTouches[0].clientX - galleryTouchStartX;
+            if (Math.abs(deltaX) < 40) {
+                return;
+            }
+            if (deltaX < 0) {
+                galleryShowAt(galleryActiveIndex + 1);
+            } else {
+                galleryShowAt(galleryActiveIndex - 1);
+            }
+        }, { passive: true });
+    }
 })();
 
